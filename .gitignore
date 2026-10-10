@@ -2,11 +2,6 @@
 .gradle/
 build/
 */build/
-gradle-8.2/
-bin/
-lib/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 # Android SDK
 android-sdk/
@@ -25,7 +20,7 @@ UPRProxy-*.apk
 .vscode/
 *.swp
 
-# Media / screenshots
+# Media
 *.mp4
 *.webm
 
@@ -41,3 +36,13 @@ build.log
 secrets.properties
 .env
 .env.*
+
+# ⚠️ NO ignorar el wrapper — lo necesita GitHub Actions
+!gradlew
+!gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Gradle bin/lib (extraídos, no van al repo)
+/bin/
+/lib/
