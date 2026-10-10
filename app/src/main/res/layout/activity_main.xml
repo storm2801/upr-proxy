@@ -12,16 +12,17 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- Encabezado institucional -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingBottom="24dp">
+            android:paddingBottom="20dp">
 
             <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:src="@drawable/logo"
                 android:contentDescription="@string/university_name"/>
 
@@ -30,46 +31,47 @@
                 android:layout_height="wrap_content"
                 android:text="@string/university_name"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textColor="@color/olive_dark"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="6dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/university_subtitle"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textColor="@color/gray_text"/>
         </LinearLayout>
 
+        <!-- Tarjeta de configuración -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
+            app:cardElevation="3dp"
             app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="18dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Configuración del Proxy"
                     android:textStyle="bold"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textColor="@color/olive_dark"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="14dp"/>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/server_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editServer"
                         android:layout_width="match_parent"
@@ -83,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/port_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPort"
                         android:layout_width="match_parent"
@@ -97,7 +99,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/user_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editUser"
                         android:layout_width="match_parent"
@@ -111,8 +113,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/password_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:passwordToggleEnabled="true"
-                    android:layout_marginBottom="8dp">
+                    app:passwordToggleEnabled="true">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPassword"
                         android:layout_width="match_parent"
@@ -124,35 +125,178 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Botón Probar conexión -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTest"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="14dp"
+            android:text="Probar conexión al proxy"
+            android:textSize="13sp"
+            app:cornerRadius="24dp"
+            android:textColor="@color/olive_dark"
+            app:strokeColor="@color/olive"/>
+
+        <!-- Botón principal Conectar/Desconectar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggle"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="14dp"
             android:text="@string/connect"
-            android:textSize="18sp"
+            android:textSize="17sp"
             android:textStyle="bold"
             app:cornerRadius="32dp"
             android:backgroundTint="@color/olive"
             android:textColor="@color/white"/>
 
-        <TextView
-            android:id="@+id/txtStatus"
+        <!-- Tarjeta de estado real -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:text="@string/status_disconnected"
-            android:textSize="14sp"
-            android:textColor="@color/gray_text"/>
+            android:layout_marginTop="18dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:id="@+id/statusDot"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@drawable/dot_red"/>
+
+                    <TextView
+                        android:id="@+id/txtStatusTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="Desconectado"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="@color/olive_dark"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Servidor:"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"/>
+
+                    <TextView
+                        android:id="@+id/txtStatusServer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/olive_dark"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Conexiones activas:"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"/>
+
+                    <TextView
+                        android:id="@+id/txtStatusConnections"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/olive_dark"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Datos enviados:"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"/>
+
+                    <TextView
+                        android:id="@+id/txtStatusBytes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 B"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/olive_dark"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tiempo conectado:"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"/>
+
+                    <TextView
+                        android:id="@+id/txtStatusUptime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/olive_dark"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Texto de versión (con modo dev oculto) -->
         <TextView
             android:id="@+id/txtVersion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta2"
+            android:text="Versión 1.0.0-beta3"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:alpha="0.7"/>

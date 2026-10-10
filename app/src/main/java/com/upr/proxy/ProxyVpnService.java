@@ -19,6 +19,9 @@ public class ProxyVpnService extends VpnService {
     private static final String CHANNEL_ID = "upr_proxy_channel";
     private static final int NOTIFICATION_ID = 1;
 
+    // Intent action para que MainActivity sepa que el servicio está vivo
+    public static final String ACTION_STATE_CHANGED = "com.upr.proxy.STATE_CHANGED";
+
     private ParcelFileDescriptor vpnInterface;
     private Thread vpnThread;
     private ProxyForwarder forwarder;
@@ -30,15 +33,15 @@ public class ProxyVpnService extends VpnService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            proxyServer = intent.getStringExtra("server");
-            proxyPort = intent.getStringExtra("port");
-            proxyUser = intent.getStringExtra("user");
-            proxyPassword = intent.getStringExtra("password");
+            String s = intent.getStringExtra("server");
+            String p = intent.getStringExtra("port");
+            String u = intent.getStringExtra("user");
+            String pw = intent.getStringExtra("password");
+            if (s != null) proxyServer = s;
+            if (p != null) proxyPort = p;
+            if (u != null) proxyUser = u;
+            if (pw != null) proxyPassword = pw;
         }
-        if (proxyServer == null) proxyServer = "proxy.upr.edu.cu";
-        if (proxyPort == null) proxyPort = "8080";
-        if (proxyUser == null) proxyUser = "";
-        if (proxyPassword == null) proxyPassword = "";
 
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
@@ -54,10 +57,6 @@ public class ProxyVpnService extends VpnService {
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
 
-            // Añadir apps excluidas si hace falta (por ejemplo para no capturar
-            // el propio tráfico del proxy). Aquí lo dejamos tal cual.
-            // builder.addDisallowedApplication(getPackageName());
-
             vpnInterface = builder.establish();
             if (vpnInterface == null) {
                 L.e(TAG, "No se pudo establecer la interfaz VPN");
@@ -70,12 +69,26 @@ public class ProxyVpnService extends VpnService {
             vpnThread = new Thread(forwarder, "upr-proxy-forwarder");
             vpnThread.start();
 
+            ProxyStatus.vpnRunning.set(true);
+            ProxyStatus.serverHost = proxyServer;
+            try { ProxyStatus.serverPort = Integer.parseInt(proxyPort); } catch (Exception ignored) {}
+            ProxyStatus.startedAt = System.currentTimeMillis();
+
+            broadcastState();
             L.i(TAG, "VPN activa → proxy " + proxyServer + ":" + proxyPort);
 
         } catch (Exception e) {
             L.e(TAG, "Error al iniciar VPN", e);
+            ProxyStatus.vpnRunning.set(false);
+            broadcastState();
             stopSelf();
         }
+    }
+
+    private void broadcastState() {
+        Intent i = new Intent(ACTION_STATE_CHANGED);
+        i.setPackage(getPackageName());
+        sendBroadcast(i);
     }
 
     private Notification buildNotification() {
@@ -83,11 +96,18 @@ public class ProxyVpnService extends VpnService {
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
+        // Botón de desconectar en la notificación
+        Intent disc = new Intent(this, ProxyVpnService.class);
+        disc.setAction("STOP");
+        PendingIntent piDisc = PendingIntent.getService(this, 1, disc,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("UPR Proxy activo")
                 .setContentText("Redirigiendo a " + proxyServer + ":" + proxyPort)
                 .setSmallIcon(R.drawable.logo)
                 .setContentIntent(pi)
+                .addAction(0, "Desconectar", piDisc)
                 .setOngoing(true)
                 .build();
     }
@@ -103,7 +123,6 @@ public class ProxyVpnService extends VpnService {
 
     @Override
     public void onRevoke() {
-        // El sistema revocó el permiso VPN (por ejemplo, otra VPN tomó el control)
         L.w(TAG, "VPN revocada por el sistema");
         shutdownEverything();
         super.onRevoke();
@@ -116,7 +135,6 @@ public class ProxyVpnService extends VpnService {
     }
 
     private void shutdownEverything() {
-        // Orden: primero el motor nativo, luego el puente Java, luego el fd
         if (forwarder != null) {
             forwarder.shutdown();
             forwarder = null;
@@ -129,5 +147,7 @@ public class ProxyVpnService extends VpnService {
             try { vpnInterface.close(); } catch (IOException ignored) {}
             vpnInterface = null;
         }
+        ProxyStatus.vpnRunning.set(false);
+        broadcastState();
     }
 }

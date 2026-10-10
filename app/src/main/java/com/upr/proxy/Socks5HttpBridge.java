@@ -13,16 +13,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Servidor SOCKS5 local que reenvía todas las conexiones al proxy HTTP corporativo
- * usando el método CONNECT con autenticación básica.
+ * Servidor SOCKS5 local que reenvía todas las conexiones al proxy HTTP
+ * corporativo usando CONNECT + Proxy-Authorization.
  *
- * Flujo:
- *   1. Escucha en 127.0.0.1:1080
- *   2. Recibe handshake SOCKS5 sin autenticación
- *   3. Recibe petición CONNECT host:puerto
- *   4. Abre TCP al proxy HTTP, envía "CONNECT host:puerto HTTP/1.1"
- *      con cabecera Proxy-Authorization: Basic <user:pass>
- *   5. Tras el 200 OK, responde SOCKS5 success y hace de tubería bidireccional
+ * Actualiza ProxyStatus en tiempo real (conexiones activas, bytes enviados).
  */
 public class Socks5HttpBridge {
 
@@ -59,6 +53,12 @@ public class Socks5HttpBridge {
         serverSocket.bind(new InetSocketAddress("127.0.0.1", LISTEN_PORT));
         running.set(true);
 
+        ProxyStatus.serverHost = httpProxyHost;
+        ProxyStatus.serverPort = httpProxyPort;
+        ProxyStatus.startedAt = System.currentTimeMillis();
+        ProxyStatus.reset();
+        ProxyStatus.startedAt = System.currentTimeMillis();
+
         acceptThread = new Thread(this::acceptLoop, "socks5-accept");
         acceptThread.start();
         L.i(TAG, "Puente SOCKS5→HTTP escuchando en 127.0.0.1:" + LISTEN_PORT
@@ -78,6 +78,7 @@ public class Socks5HttpBridge {
         if (acceptThread != null) {
             acceptThread.interrupt();
         }
+        ProxyStatus.vpnRunning.set(false);
         L.i(TAG, "Puente SOCKS5→HTTP detenido");
     }
 
@@ -95,13 +96,13 @@ public class Socks5HttpBridge {
     }
 
     private void handleClient(Socket client) {
+        boolean counted = false;
         try {
             client.setTcpNoDelay(true);
             InputStream in = client.getInputStream();
             OutputStream out = client.getOutputStream();
 
-            // --- Handshake SOCKS5 ---
-            // [VER=5][NMETHODS][METHODS...]
+            // Handshake SOCKS5
             byte[] hello = new byte[2];
             if (!readFully(in, hello)) return;
             if ((hello[0] & 0xFF) != 0x05) return;
@@ -109,36 +110,34 @@ public class Socks5HttpBridge {
             byte[] methods = new byte[nMethods];
             if (!readFully(in, methods)) return;
 
-            // Método 0x00 = sin autenticación
             out.write(new byte[]{0x05, 0x00});
             out.flush();
 
-            // --- Petición SOCKS5 ---
-            // [VER=5][CMD][RSV=0][ATYP][ADDR][PORT]
+            // Petición SOCKS5
             byte[] req = new byte[4];
             if (!readFully(in, req)) return;
             if ((req[0] & 0xFF) != 0x05) return;
             int cmd = req[1] & 0xFF;
             int atyp = req[3] & 0xFF;
 
-            if (cmd != 0x01) { // solo CONNECT
+            if (cmd != 0x01) {
                 sendSocksReply(out, 0x07);
                 return;
             }
 
             String host;
-            if (atyp == 0x01) { // IPv4
+            if (atyp == 0x01) {
                 byte[] a = new byte[4];
                 if (!readFully(in, a)) return;
                 host = (a[0] & 0xFF) + "." + (a[1] & 0xFF) + "." + (a[2] & 0xFF) + "." + (a[3] & 0xFF);
-            } else if (atyp == 0x03) { // Dominio
+            } else if (atyp == 0x03) {
                 byte[] lenBuf = new byte[1];
                 if (!readFully(in, lenBuf)) return;
                 int len = lenBuf[0] & 0xFF;
                 byte[] d = new byte[len];
                 if (!readFully(in, d)) return;
                 host = new String(d);
-            } else if (atyp == 0x04) { // IPv6
+            } else if (atyp == 0x04) {
                 byte[] a = new byte[16];
                 if (!readFully(in, a)) return;
                 StringBuilder sb = new StringBuilder();
@@ -158,7 +157,7 @@ public class Socks5HttpBridge {
 
             L.d(TAG, "CONNECT → " + host + ":" + destPort);
 
-            // --- Conectar al proxy HTTP ---
+            // Conectar al proxy HTTP
             Socket proxy = new Socket();
             try {
                 proxy.connect(new InetSocketAddress(httpProxyHost, httpProxyPort), CONNECT_TIMEOUT_MS);
@@ -167,7 +166,6 @@ public class Socks5HttpBridge {
                 OutputStream pOut = proxy.getOutputStream();
                 InputStream pIn = proxy.getInputStream();
 
-                // Enviar CONNECT al proxy HTTP
                 StringBuilder sb = new StringBuilder();
                 sb.append("CONNECT ").append(host).append(":").append(destPort)
                         .append(" HTTP/1.1\r\n");
@@ -177,27 +175,29 @@ public class Socks5HttpBridge {
                 }
                 sb.append("Proxy-Connection: Keep-Alive\r\n");
                 sb.append("\r\n");
-                pOut.write(sb.toString().getBytes("UTF-8"));
+                byte[] reqBytes = sb.toString().getBytes("UTF-8");
+                pOut.write(reqBytes);
                 pOut.flush();
+                ProxyStatus.bytesSent.addAndGet(reqBytes.length);
 
-                // Leer respuesta del proxy (primera línea + cabeceras hasta \r\n\r\n)
                 String statusLine = readLine(pIn);
                 if (statusLine == null || !statusLine.contains(" 200 ")) {
                     L.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
-                    sendSocksReply(out, 0x05); // connection refused
+                    sendSocksReply(out, 0x05);
                     proxy.close();
                     return;
                 }
-                // Consumir el resto de cabeceras
                 String line;
-                while ((line = readLine(pIn)) != null && !line.isEmpty()) {
-                    // ignorar cabeceras
-                }
+                while ((line = readLine(pIn)) != null && !line.isEmpty()) { /* ignorar */ }
 
-                // --- SOCKS5 éxito ---
                 sendSocksReply(out, 0x00);
 
-                // --- Tubería bidireccional ---
+                // Contabilizar
+                ProxyStatus.activeConnections.incrementAndGet();
+                ProxyStatus.totalConnections.incrementAndGet();
+                counted = true;
+
+                // Tubería bidireccional
                 pipe(in, pOut, client, proxy);
                 pipe(pIn, out, proxy, client);
 
@@ -211,10 +211,12 @@ public class Socks5HttpBridge {
             L.w(TAG, "Error atendiendo cliente", e);
         } finally {
             try { client.close(); } catch (IOException ignored) {}
+            if (counted) {
+                ProxyStatus.activeConnections.decrementAndGet();
+            }
         }
     }
 
-    /** Respuesta SOCKS5: [VER=5][REP][RSV=0][ATYP=1][ADDR=0.0.0.0][PORT=0] */
     private void sendSocksReply(OutputStream out, int rep) throws IOException {
         out.write(new byte[]{
                 0x05, (byte) rep, 0x00, 0x01,
@@ -224,7 +226,6 @@ public class Socks5HttpBridge {
         out.flush();
     }
 
-    /** Lee exactamente buf.length bytes o devuelve false si EOF. */
     private boolean readFully(InputStream in, byte[] buf) throws IOException {
         int off = 0;
         while (off < buf.length) {
@@ -235,7 +236,6 @@ public class Socks5HttpBridge {
         return true;
     }
 
-    /** Lee una línea hasta \n (sin incluir el \n). Devuelve null si EOF. */
     private String readLine(InputStream in) throws IOException {
         StringBuilder sb = new StringBuilder();
         int c;
@@ -248,7 +248,6 @@ public class Socks5HttpBridge {
         return sb.toString();
     }
 
-    /** Copia bytes de src a dst hasta EOF. Cierra ambos sockets al terminar. */
     private void pipe(InputStream src, OutputStream dst, Socket s1, Socket s2) {
         byte[] buf = new byte[BUFFER_SIZE];
         try {
@@ -256,9 +255,10 @@ public class Socks5HttpBridge {
             while ((n = src.read(buf)) != -1) {
                 dst.write(buf, 0, n);
                 dst.flush();
+                ProxyStatus.bytesSent.addAndGet(n);
             }
         } catch (IOException e) {
-            // Normal cuando una de las partes cierra la conexión.
+            // normal al cerrar
         } finally {
             try { s1.close(); } catch (IOException ignored) {}
             try { s2.close(); } catch (IOException ignored) {}
