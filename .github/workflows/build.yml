@@ -12,6 +12,9 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Compilar APK release firmado
@@ -20,6 +23,8 @@ jobs:
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar JDK 17
         uses: actions/setup-java@v5
@@ -90,3 +95,38 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Actualizar version.json (solo tags v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION_CODE=$(grep -oP 'versionCode\s+\K[0-9]+' app/build.gradle | head -1)
+          VERSION_NAME=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle | head -1)
+          APK_URL="https://github.com/storm2801/upr-proxy/releases/download/${TAG_NAME}/UPRProxy-${VERSION_NAME}-release.apk"
+
+          # Changelog: extraer la sección de esta versión del CHANGELOG.md
+          CHANGELOG="Nueva versión ${VERSION_NAME} disponible. Consulta el CHANGELOG para más detalles."
+
+          cat > /tmp/version.json <<EOJ
+          {
+            "versionCode": ${VERSION_CODE},
+            "versionName": "${VERSION_NAME}",
+            "apkUrl": "${APK_URL}",
+            "changelog": "${CHANGELOG}",
+            "mandatory": false,
+            "publishedAt": "$(date +%Y-%m-%d)"
+          }
+          EOJ
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          git pull origin main
+          cp /tmp/version.json version.json
+          git add version.json
+          git diff --cached --quiet && echo "Sin cambios en version.json" || \
+            git commit -m "chore: actualizar version.json a ${VERSION_NAME}"
+          git push origin main || echo "No se pudo pushear (probablemente sin cambios)"
