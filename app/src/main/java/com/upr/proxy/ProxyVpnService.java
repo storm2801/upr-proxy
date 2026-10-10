@@ -1,0 +1,108 @@
+package com.upr.proxy;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.net.VpnService;
+import android.os.Build;
+import android.os.ParcelFileDescriptor;
+import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+
+import org.amnezia.awg.hevtunnel.TProxyService;
+
+import java.io.IOException;
+
+public class ProxyVpnService extends VpnService {
+
+    private static final String TAG = "ProxyVpnService";
+    private static final String CHANNEL_ID = "upr_proxy_channel";
+    private static final int NOTIFICATION_ID = 1;
+
+    private ParcelFileDescriptor vpnInterface;
+    private Thread vpnThread;
+    private String proxyServer;
+    private String proxyPort;
+    private String proxyUser;
+    private String proxyPassword;
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            proxyServer = intent.getStringExtra("server");
+            proxyPort = intent.getStringExtra("port");
+            proxyUser = intent.getStringExtra("user");
+            proxyPassword = intent.getStringExtra("password");
+        }
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, buildNotification());
+        startVpn();
+        return START_STICKY;
+    }
+
+    private void startVpn() {
+        if (vpnInterface != null) return;
+        try {
+            Builder builder = new Builder();
+            builder.setSession("UPR Proxy");
+            builder.addAddress("10.0.0.2", 32);
+            builder.addRoute("0.0.0.0", 0);
+
+            vpnInterface = builder.establish();
+            if (vpnInterface == null) {
+                Log.e(TAG, "No se pudo establecer la interfaz VPN");
+                stopSelf();
+                return;
+            }
+            vpnThread = new Thread(new ProxyForwarder(
+                    getApplicationContext(), vpnInterface,
+                    proxyServer, proxyPort, proxyUser, proxyPassword));
+            vpnThread.start();
+        } catch (Exception e) {
+            Log.e(TAG, "Error al iniciar VPN", e);
+            stopSelf();
+        }
+    }
+
+    private Notification buildNotification() {
+        Intent ni = new Intent(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, PendingIntent.FLAG_IMMUTABLE);
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("UPR Proxy activo")
+                .setContentText("Redirigiendo a " + proxyServer + ":" + proxyPort)
+                .setSmallIcon(R.drawable.logo)
+                .setContentIntent(pi)
+                .setOngoing(true)
+                .build();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel ch = new NotificationChannel(
+                    CHANNEL_ID, "UPR Proxy", NotificationManager.IMPORTANCE_LOW);
+            NotificationManager mgr = getSystemService(NotificationManager.class);
+            if (mgr != null) mgr.createNotificationChannel(ch);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        try {
+            TProxyService.TProxyStopService();
+        } catch (Throwable t) {
+            Log.w(TAG, "TProxyStopService falló: " + t.getMessage());
+        }
+        if (vpnThread != null) {
+            vpnThread.interrupt();
+            vpnThread = null;
+        }
+        if (vpnInterface != null) {
+            try { vpnInterface.close(); } catch (IOException ignored) {}
+            vpnInterface = null;
+        }
+        super.onDestroy();
+    }
+}

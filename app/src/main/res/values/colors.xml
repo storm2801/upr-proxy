@@ -1,0 +1,7 @@
+<resources>
+    <color name="olive">#556B2F</color>
+    <color name="olive_dark">#3E4F22</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_text">#666666</color>
+</resources>

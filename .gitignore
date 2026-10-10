@@ -1,0 +1,43 @@
+# Build / Gradle
+.gradle/
+build/
+*/build/
+gradle-8.2/
+bin/
+lib/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Android SDK
+android-sdk/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+UPRProxy-*.apk
+*.apk.idsig
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Media / screenshots
+*.mp4
+*.webm
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+build.log
+
+# Secretos
+secrets.properties
+.env
+.env.*

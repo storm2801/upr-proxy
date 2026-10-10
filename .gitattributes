@@ -1,0 +1,14 @@
+* text=auto eol=lf
+*.apk binary
+*.aab binary
+*.so binary
+*.aar binary
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+android-sdk/** linguist-vendored
+gradle-8.2/** linguist-vendored
+app/build/** linguist-generated

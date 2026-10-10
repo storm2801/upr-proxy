@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">UPR Proxy</string>
+    <string name="university_name">Universidad de Pinar del Río</string>
+    <string name="university_subtitle">Hermanos Saíz Montes de Oca</string>
+    <string name="server_label">Servidor</string>
+    <string name="port_label">Puerto</string>
+    <string name="user_label">Usuario</string>
+    <string name="password_label">Contraseña</string>
+    <string name="connect">Conectar</string>
+    <string name="disconnect">Desconectar</string>
+    <string name="status_disconnected">Desconectado</string>
+    <string name="status_connected">Conectado</string>
+    <string name="status_connecting">Conectando…</string>
+    <string name="save">Guardar</string>
+    <string name="server_hint">proxy.upr.edu.cu</string>
+    <string name="port_hint">8080</string>
+    <string name="user_hint">nombre de usuario</string>
+    <string name="password_hint">contraseña</string>
+    <string name="version_prefix">Versión</string>
+</resources>
