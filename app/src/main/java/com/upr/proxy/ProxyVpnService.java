@@ -12,8 +12,6 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import org.amnezia.awg.hevtunnel.TProxyService;
-
 import java.io.IOException;
 
 public class ProxyVpnService extends VpnService {
@@ -24,10 +22,11 @@ public class ProxyVpnService extends VpnService {
 
     private ParcelFileDescriptor vpnInterface;
     private Thread vpnThread;
-    private String proxyServer;
-    private String proxyPort;
-    private String proxyUser;
-    private String proxyPassword;
+    private ProxyForwarder forwarder;
+    private String proxyServer = "proxy.upr.edu.cu";
+    private String proxyPort = "8080";
+    private String proxyUser = "";
+    private String proxyPassword = "";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -37,6 +36,11 @@ public class ProxyVpnService extends VpnService {
             proxyUser = intent.getStringExtra("user");
             proxyPassword = intent.getStringExtra("password");
         }
+        if (proxyServer == null) proxyServer = "proxy.upr.edu.cu";
+        if (proxyPort == null) proxyPort = "8080";
+        if (proxyUser == null) proxyUser = "";
+        if (proxyPassword == null) proxyPassword = "";
+
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
         startVpn();
@@ -51,16 +55,24 @@ public class ProxyVpnService extends VpnService {
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
 
+            // Añadir apps excluidas si hace falta (por ejemplo para no capturar
+            // el propio tráfico del proxy). Aquí lo dejamos tal cual.
+            // builder.addDisallowedApplication(getPackageName());
+
             vpnInterface = builder.establish();
             if (vpnInterface == null) {
                 Log.e(TAG, "No se pudo establecer la interfaz VPN");
                 stopSelf();
                 return;
             }
-            vpnThread = new Thread(new ProxyForwarder(
-                    getApplicationContext(), vpnInterface,
-                    proxyServer, proxyPort, proxyUser, proxyPassword));
+
+            forwarder = new ProxyForwarder(getApplicationContext(), vpnInterface,
+                    proxyServer, proxyPort, proxyUser, proxyPassword);
+            vpnThread = new Thread(forwarder, "upr-proxy-forwarder");
             vpnThread.start();
+
+            Log.i(TAG, "VPN activa → proxy " + proxyServer + ":" + proxyPort);
+
         } catch (Exception e) {
             Log.e(TAG, "Error al iniciar VPN", e);
             stopSelf();
@@ -69,7 +81,9 @@ public class ProxyVpnService extends VpnService {
 
     private Notification buildNotification() {
         Intent ni = new Intent(this, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, ni,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("UPR Proxy activo")
                 .setContentText("Redirigiendo a " + proxyServer + ":" + proxyPort)
@@ -89,11 +103,24 @@ public class ProxyVpnService extends VpnService {
     }
 
     @Override
+    public void onRevoke() {
+        // El sistema revocó el permiso VPN (por ejemplo, otra VPN tomó el control)
+        Log.w(TAG, "VPN revocada por el sistema");
+        shutdownEverything();
+        super.onRevoke();
+    }
+
+    @Override
     public void onDestroy() {
-        try {
-            TProxyService.TProxyStopService();
-        } catch (Throwable t) {
-            Log.w(TAG, "TProxyStopService falló: " + t.getMessage());
+        shutdownEverything();
+        super.onDestroy();
+    }
+
+    private void shutdownEverything() {
+        // Orden: primero el motor nativo, luego el puente Java, luego el fd
+        if (forwarder != null) {
+            forwarder.shutdown();
+            forwarder = null;
         }
         if (vpnThread != null) {
             vpnThread.interrupt();
@@ -103,6 +130,5 @@ public class ProxyVpnService extends VpnService {
             try { vpnInterface.close(); } catch (IOException ignored) {}
             vpnInterface = null;
         }
-        super.onDestroy();
     }
 }
