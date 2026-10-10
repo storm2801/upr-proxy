@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,7 +46,7 @@ public class LogsActivity extends AppCompatActivity {
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
 
-        // Cargar los logs ya existentes
+        // Cargar logs ya existentes
         List<LogBuffer.Entry> existing = LogBuffer.snapshot();
         adapter.setAll(existing);
         updateEmpty();
@@ -53,16 +54,18 @@ public class LogsActivity extends AppCompatActivity {
             recycler.scrollToPosition(existing.size() - 1);
         }
 
-        // Suscribirse a nuevos
         LogBuffer.register(listener);
 
         findViewById(R.id.btnCopy).setOnClickListener(v -> copiarTodo());
+
         findViewById(R.id.btnClear).setOnClickListener(v -> {
             LogBuffer.clear();
             adapter.setAll(new ArrayList<>());
             updateEmpty();
             L.i("LogsActivity", "Logs borrados por el usuario");
         });
+
+        findViewById(R.id.btnExitDev).setOnClickListener(v -> confirmarSalida());
     }
 
     private void updateEmpty() {
@@ -83,6 +86,24 @@ public class LogsActivity extends AppCompatActivity {
             Toast.makeText(this, "Logs copiados (" + texto.length() + " caracteres)",
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void confirmarSalida() {
+        new AlertDialog.Builder(this)
+                .setTitle("Salir del modo desarrollador")
+                .setMessage("Se desactivará el acceso a esta pantalla.\n\n" +
+                        "Para volver a activarlo, toca 7 veces el texto de la versión " +
+                        "en la pantalla principal.")
+                .setPositiveButton("Salir", (d, w) -> {
+                    getSharedPreferences("upr_proxy", MODE_PRIVATE)
+                            .edit().putBoolean("developer_mode", false).apply();
+                    L.i("LogsActivity", "Modo desarrollador desactivado");
+                    Toast.makeText(this, "Modo desarrollador desactivado",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     @Override

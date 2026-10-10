@@ -21,38 +21,55 @@
             android:text="Logs del sistema"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:textSize="15sp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCopy"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="38dp"
             android:text="Copiar"
-            android:textSize="12sp"
-            app:cornerRadius="20dp"
+            android:textSize="11sp"
+            app:cornerRadius="19dp"
             android:backgroundTint="@color/olive"
             android:textColor="@color/white"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:minWidth="0dp"
-            android:paddingLeft="14dp"
-            android:paddingRight="14dp"/>
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClear"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
             android:text="Borrar"
-            android:textSize="12sp"
-            app:cornerRadius="20dp"
+            android:textSize="11sp"
+            app:cornerRadius="19dp"
             android:backgroundTint="@color/olive"
             android:textColor="@color/white"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:minWidth="0dp"
-            android:paddingLeft="14dp"
-            android:paddingRight="14dp"/>
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExitDev"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:text="Salir"
+            android:textSize="11sp"
+            app:cornerRadius="19dp"
+            android:backgroundTint="#B71C1C"
+            android:textColor="@color/white"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"/>
+
     </LinearLayout>
 
     <TextView
