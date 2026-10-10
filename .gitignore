@@ -46,3 +46,8 @@ secrets.properties
 # Gradle bin/lib (extraídos, no van al repo)
 /bin/
 /lib/
+
+# Firma de release
+*.jks
+*.keystore
+keystore.properties
