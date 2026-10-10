@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    name: Compilar APK
+    name: Compilar APK release firmado
     runs-on: ubuntu-latest
 
     steps:
@@ -37,29 +37,48 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Compilar APK
+      - name: Restaurar keystore desde secretos
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > upr-proxy.jks
+          ls -la upr-proxy.jks
+
+      - name: Crear keystore.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cat > keystore.properties <<EOP
+          storeFile=../upr-proxy.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOP
+
+      - name: Compilar APK release
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
-          echo "SDK en: $ANDROID_HOME"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Renombrar APK con la versión
         id: apk
         run: |
           VERSION=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle | head -1)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
-          cp "$APK" "UPRProxy-${VERSION}.apk"
-          ls -lh "UPRProxy-${VERSION}.apk"
+          APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          cp "$APK" "UPRProxy-${VERSION}-release.apk"
+          ls -lh "UPRProxy-${VERSION}-release.apk"
 
       - name: Subir APK como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UPRProxy-${{ steps.apk.outputs.VERSION }}
+          name: UPRProxy-${{ steps.apk.outputs.VERSION }}-release
           path: UPRProxy-*.apk
           retention-days: 90
 

@@ -51,3 +51,8 @@ secrets.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Keystore (NO subir nunca)
+upr-proxy.jks
+*.jks
+keystore.properties
