@@ -77,6 +77,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textUri"
+                        android:importantForAutofill="no"
+                        android:saveEnabled="false"
                         android:text="@string/server_hint"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -105,6 +107,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
+                        android:importantForAutofill="no"
+                        android:saveEnabled="false"
                         android:hint="@string/user_hint"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -118,7 +122,9 @@
                         android:id="@+id/editPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textPassword"
+                        android:inputType="textPassword|textNoSuggestions"
+                        android:importantForAutofill="no"
+                        android:saveEnabled="false"
                         android:hint="@string/password_hint"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -296,7 +302,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta4"
+            android:text="Versión 1.0.0-beta5"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:alpha="0.7"/>

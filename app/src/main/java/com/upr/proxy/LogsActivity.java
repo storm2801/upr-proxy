@@ -37,6 +37,9 @@ public class LogsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                android.view.WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_logs);
 
         recycler = findViewById(R.id.recyclerLogs);
@@ -80,11 +83,26 @@ public class LogsActivity extends AppCompatActivity {
             Toast.makeText(this, "No hay logs para copiar", Toast.LENGTH_SHORT).show();
             return;
         }
-        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        final ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (cm != null) {
             cm.setPrimaryClip(ClipData.newPlainText("UPR Proxy logs", texto));
-            Toast.makeText(this, "Logs copiados (" + texto.length() + " caracteres)",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Logs copiados (" + texto.length() + " caracteres).\n"
+                    + "Se borrarán del portapapeles en 60 segundos.",
+                    Toast.LENGTH_LONG).show();
+
+            // Limpiar automáticamente en 60 s para que otras apps no puedan leerlos
+            ui.postDelayed(() -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        cm.clearPrimaryClip();
+                    } else {
+                        cm.setPrimaryClip(ClipData.newPlainText("", ""));
+                    }
+                    L.i("LogsActivity", "Portapapeles limpiado automáticamente");
+                } catch (Exception e) {
+                    L.w("LogsActivity", "No se pudo limpiar el portapapeles: " + e.getMessage());
+                }
+            }, 60000);
         }
     }
 
@@ -95,7 +113,7 @@ public class LogsActivity extends AppCompatActivity {
                         "Para volver a activarlo, toca 7 veces el texto de la versión " +
                         "en la pantalla principal.")
                 .setPositiveButton("Salir", (d, w) -> {
-                    getSharedPreferences("upr_proxy", MODE_PRIVATE)
+                    SecurePrefs.get(LogsActivity.this)
                             .edit().putBoolean("developer_mode", false).apply();
                     L.i("LogsActivity", "Modo desarrollador desactivado");
                     Toast.makeText(this, "Modo desarrollador desactivado",

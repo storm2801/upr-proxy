@@ -76,6 +76,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Bloquear screenshots y vista previa en 'Apps recientes'
+        getWindow().setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                android.view.WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_main);
 
         editServer = findViewById(R.id.editServer);
@@ -92,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
         txtVersion = findViewById(R.id.txtVersion);
         statusDot = findViewById(R.id.statusDot);
 
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        prefs = SecurePrefs.get(this);
+        SecurePrefs.migrateIfNeeded(this);
 
         mostrarVersion();
         configurarTapEnVersion();
