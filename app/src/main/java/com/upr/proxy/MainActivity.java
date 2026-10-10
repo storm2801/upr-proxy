@@ -123,6 +123,53 @@ public class MainActivity extends AppCompatActivity {
 
         syncWithService();
         registrarMonitorRed();
+
+        // Chequeo silencioso de actualizaciones (no molesta si no hay novedad)
+        comprobarActualizacionSilenciosa();
+    }
+
+    private void comprobarActualizacionSilenciosa() {
+        // Frecuencia máxima: 1 vez cada 6 horas
+        long lastCheck = prefs.getLong("last_update_check", 0);
+        long ahora = System.currentTimeMillis();
+        if (ahora - lastCheck < 6L * 60 * 60 * 1000) return;
+
+        prefs.edit().putLong("last_update_check", ahora).apply();
+
+        UpdateChecker.check(this, (hasUpdate, info, err) -> {
+            if (hasUpdate && info != null) {
+                UpdateDialog.showAvailable(MainActivity.this, info,
+                        () -> descargarDesdeMain(info));
+            }
+        });
+    }
+
+    private void descargarDesdeMain(UpdateInfo info) {
+        if (info.apkUrl == null || info.apkUrl.isEmpty()) return;
+
+        final android.app.Dialog prog = UpdateDialog.showProgress(this, info.versionName);
+
+        UpdateDownloader.download(this, info.apkUrl, info.versionName,
+                new UpdateDownloader.Callback() {
+                    @Override
+                    public void onProgress(int percent, long downloaded, long total) {
+                        UpdateDialog.updateProgress(prog, percent, downloaded, total);
+                    }
+
+                    @Override
+                    public void onComplete(java.io.File apkFile) {
+                        try { prog.dismiss(); } catch (Exception ignored) {}
+                        UpdateDialog.installApk(MainActivity.this, apkFile);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        try { prog.dismiss(); } catch (Exception ignored) {}
+                        ErrorDialog.show(MainActivity.this,
+                                "Error al descargar",
+                                message, "Entendido", null, null, null);
+                    }
+                });
     }
 
     @Override

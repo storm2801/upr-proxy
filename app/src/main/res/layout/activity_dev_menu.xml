@@ -133,6 +133,18 @@
             android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheckUpdates"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Buscar actualizaciones"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            android:backgroundTint="@color/upr_green"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewLogs"
             android:layout_width="match_parent"
             android:layout_height="54dp"

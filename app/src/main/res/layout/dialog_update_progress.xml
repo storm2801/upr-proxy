@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/dialog_card_bg"
+    android:elevation="8dp">
+
+    <TextView
+        android:id="@+id/txtUpdateTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Descargando actualización…"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/upr_green_dark"
+        android:gravity="center"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:layout_marginTop="20dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/upr_green"
+        android:progressBackgroundTint="@color/upr_green_bg"/>
+
+    <TextView
+        android:id="@+id/txtProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="0%"
+        android:textSize="13sp"
+        android:textColor="@color/gray_text"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="No cierres la app"
+        android:textSize="11sp"
+        android:textColor="@color/gray_text"
+        android:alpha="0.7"
+        android:gravity="center"/>
+
+</LinearLayout>

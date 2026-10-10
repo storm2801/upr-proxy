@@ -46,6 +46,8 @@ public class DevMenuActivity extends AppCompatActivity {
         txtDevVersion = findViewById(R.id.txtDevVersion);
         txtDevDevice = findViewById(R.id.txtDevDevice);
 
+        findViewById(R.id.btnCheckUpdates).setOnClickListener(v -> buscarActualizacion(true));
+
         findViewById(R.id.btnViewLogs).setOnClickListener(v -> {
             startActivity(new Intent(this, LogsActivity.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -114,6 +116,62 @@ public class DevMenuActivity extends AppCompatActivity {
     }
 
     // ---------- Diagnóstico ----------
+
+    private void buscarActualizacion(boolean mostrarSiAlDia) {
+        Toast.makeText(this, "Buscando actualizaciones…", Toast.LENGTH_SHORT).show();
+
+        UpdateChecker.check(this, (hasUpdate, info, err) -> {
+            if (err != null) {
+                ErrorDialog.show(DevMenuActivity.this,
+                        "No se pudo comprobar",
+                        err + "\n\nVerifica tu conexión a internet.",
+                        "Entendido", null, null, null);
+                return;
+            }
+            if (hasUpdate && info != null) {
+                UpdateDialog.showAvailable(DevMenuActivity.this, info,
+                        () -> iniciarDescarga(info));
+            } else if (mostrarSiAlDia) {
+                Toast.makeText(this, "✅ Ya tienes la última versión", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void iniciarDescarga(UpdateInfo info) {
+        if (info.apkUrl == null || info.apkUrl.isEmpty()) {
+            Toast.makeText(this, "URL de descarga no disponible", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        final android.app.Dialog prog = UpdateDialog.showProgress(this, info.versionName);
+
+        UpdateDownloader.download(this, info.apkUrl, info.versionName,
+                new UpdateDownloader.Callback() {
+                    @Override
+                    public void onProgress(int percent, long downloaded, long total) {
+                        UpdateDialog.updateProgress(prog, percent, downloaded, total);
+                    }
+
+                    @Override
+                    public void onComplete(java.io.File apkFile) {
+                        try { prog.dismiss(); } catch (Exception ignored) {}
+                        Toast.makeText(DevMenuActivity.this,
+                                "Descarga completa. Abriendo instalador…",
+                                Toast.LENGTH_SHORT).show();
+                        UpdateDialog.installApk(DevMenuActivity.this, apkFile);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        try { prog.dismiss(); } catch (Exception ignored) {}
+                        ErrorDialog.show(DevMenuActivity.this,
+                                "Error al descargar",
+                                "No se pudo descargar el APK:\n\n" + message
+                                + "\n\nInténtalo de nuevo más tarde.",
+                                "Entendido", null, null, null);
+                    }
+                });
+    }
 
     private void copiarLogs() {
         String txt = LogBuffer.fullText();
@@ -206,13 +264,11 @@ public class DevMenuActivity extends AppCompatActivity {
                 .setTitle("Forzar reconexión")
                 .setMessage("Se detendrá la VPN y se volverá a iniciar con los datos guardados. ¿Continuar?")
                 .setPositiveButton("Reconectar", (d, w) -> {
-                    // Detener
                     Intent stop = new Intent(this, ProxyVpnService.class);
                     stop.setAction(ProxyVpnService.ACTION_STOP);
                     startService(stop);
                     L.i("DevMenu", "Forzando reconexión VPN");
 
-                    // Rearrancar tras 2s
                     ui.postDelayed(() -> {
                         SharedPreferences p = SecurePrefs.get(this);
                         Intent start = new Intent(this, ProxyVpnService.class);
