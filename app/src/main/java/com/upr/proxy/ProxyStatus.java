@@ -4,44 +4,63 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Estado global del proxy en tiempo real.
- * Lo escribe ProxyVpnService / Socks5HttpBridge / TestConnection,
- * y lo lee MainActivity para pintar la UI.
- */
 public class ProxyStatus {
 
-    // VPN corriendo (arrancada por el usuario y no detenida)
     public static final AtomicBoolean vpnRunning = new AtomicBoolean(false);
-
-    // Datos del servidor
     public static volatile String serverHost = "";
     public static volatile int serverPort = 0;
-
-    // Conexiones actualmente abiertas
     public static final AtomicInteger activeConnections = new AtomicInteger(0);
-
-    // Total de bytes enviados al proxy
     public static final AtomicLong bytesSent = new AtomicLong(0);
-
-    // Total de conexiones desde el arranque
     public static final AtomicLong totalConnections = new AtomicLong(0);
-
-    // Momento de arranque (ms)
     public static volatile long startedAt = 0;
+
+    // Cálculo de velocidad
+    private static final AtomicLong lastBytes = new AtomicLong(0);
+    private static final AtomicLong lastCheck = new AtomicLong(0);
+    public static volatile long speedBps = 0;
 
     public static void reset() {
         activeConnections.set(0);
         bytesSent.set(0);
         totalConnections.set(0);
         startedAt = 0;
+        lastBytes.set(0);
+        lastCheck.set(0);
+        speedBps = 0;
+    }
+
+    /** Llamar periódicamente (1 vez por segundo) para calcular la velocidad. */
+    public static void updateSpeed() {
+        long now = System.currentTimeMillis();
+        long last = lastCheck.get();
+        if (last == 0) {
+            lastCheck.set(now);
+            lastBytes.set(bytesSent.get());
+            return;
+        }
+        long dt = now - last;
+        if (dt >= 800) {
+            long currentBytes = bytesSent.get();
+            long dBytes = currentBytes - lastBytes.get();
+            if (dBytes < 0) dBytes = 0;
+            speedBps = (dBytes * 1000) / dt;
+            lastBytes.set(currentBytes);
+            lastCheck.set(now);
+        }
     }
 
     public static String formatBytes(long bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
-        if (bytes < 1024 * 1024 * 1024) return String.format("%.1f MB", bytes / (1024.0 * 1024));
+        if (bytes < 1024L * 1024 * 1024) return String.format("%.1f MB", bytes / (1024.0 * 1024));
         return String.format("%.2f GB", bytes / (1024.0 * 1024 * 1024));
+    }
+
+    public static String formatSpeed() {
+        long s = speedBps;
+        if (s < 1024) return s + " B/s";
+        if (s < 1024 * 1024) return String.format("%.1f KB/s", s / 1024.0);
+        return String.format("%.1f MB/s", s / (1024.0 * 1024));
     }
 
     public static String formatUptime(long startedAtMs) {

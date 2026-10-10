@@ -10,19 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="18dp">
 
-        <!-- Encabezado institucional -->
+        <!-- Encabezado -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
+            android:paddingTop="12dp"
             android:paddingBottom="20dp">
 
             <ImageView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="78dp"
+                android:layout_height="78dp"
                 android:src="@drawable/logo"
                 android:contentDescription="@string/university_name"/>
 
@@ -31,9 +32,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/university_name"
                 android:textStyle="bold"
-                android:textSize="15sp"
-                android:textColor="@color/olive_dark"
-                android:layout_marginTop="6dp"/>
+                android:textSize="16sp"
+                android:textColor="@color/upr_green_dark"
+                android:layout_marginTop="10dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -47,9 +48,11 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="@color/white">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/upr_green_bg"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -60,118 +63,186 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Configuración del Proxy"
+                    android:text="@string/config_title"
                     android:textStyle="bold"
                     android:textSize="15sp"
-                    android:textColor="@color/olive_dark"
+                    android:textColor="@color/upr_green_dark"
                     android:layout_marginBottom="14dp"/>
 
+                <!-- Servidor -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/server_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="10dp">
+                    app:startIconDrawable="@drawable/ic_server"
+                    app:startIconTint="@color/upr_green_medium"
+                    app:boxStrokeColor="@color/upr_green"
+                    app:hintTextColor="@color/upr_green_medium"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editServer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textUri"
+                        android:hint="@string/server_hint"
+                        android:textColor="@color/upr_green_dark"
+                        android:textColorHint="@color/upr_green_light"
+                        android:textSize="14sp"
                         android:importantForAutofill="no"
-                        android:saveEnabled="false"
-                        android:text="@string/server_hint"/>
+                        android:saveEnabled="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Puerto -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/port_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="10dp">
+                    app:startIconDrawable="@drawable/ic_port"
+                    app:startIconTint="@color/upr_green_medium"
+                    app:boxStrokeColor="@color/upr_green"
+                    app:hintTextColor="@color/upr_green_medium"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPort"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:text="@string/port_hint"/>
+                        android:hint="@string/port_hint"
+                        android:textColor="@color/upr_green_dark"
+                        android:textColorHint="@color/upr_green_light"
+                        android:textSize="14sp"
+                        android:importantForAutofill="no"
+                        android:saveEnabled="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Usuario -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/user_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_marginBottom="10dp">
+                    app:startIconDrawable="@drawable/ic_person"
+                    app:startIconTint="@color/upr_green_medium"
+                    app:boxStrokeColor="@color/upr_green"
+                    app:hintTextColor="@color/upr_green_medium"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    android:layout_marginBottom="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editUser"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
+                        android:hint="@string/user_hint"
+                        android:textColor="@color/upr_green_dark"
+                        android:textColorHint="@color/upr_green_light"
+                        android:textSize="14sp"
                         android:importantForAutofill="no"
-                        android:saveEnabled="false"
-                        android:hint="@string/user_hint"/>
+                        android:saveEnabled="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Contraseña -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/password_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:passwordToggleEnabled="true">
+                    app:startIconDrawable="@drawable/ic_lock"
+                    app:startIconTint="@color/upr_green_medium"
+                    app:endIconMode="password_toggle"
+                    app:endIconTint="@color/upr_green_medium"
+                    app:boxStrokeColor="@color/upr_green"
+                    app:hintTextColor="@color/upr_green_medium"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword|textNoSuggestions"
+                        android:hint="@string/password_hint"
+                        android:textColor="@color/upr_green_dark"
+                        android:textColorHint="@color/upr_green_light"
+                        android:textSize="14sp"
                         android:importantForAutofill="no"
-                        android:saveEnabled="false"
-                        android:hint="@string/password_hint"/>
+                        android:saveEnabled="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Botón Probar conexión -->
+        <!-- Probar conexión -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTest"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="14dp"
-            android:text="Probar conexión al proxy"
+            android:text="@string/test_connection"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="24dp"
-            android:textColor="@color/olive_dark"
-            app:strokeColor="@color/olive"/>
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            app:strokeWidth="2dp"/>
 
-        <!-- Botón principal Conectar/Desconectar -->
+        <!-- Conectar / Desconectar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggle"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginTop="14dp"
+            android:layout_height="62dp"
+            android:layout_marginTop="12dp"
             android:text="@string/connect"
             android:textSize="17sp"
             android:textStyle="bold"
-            app:cornerRadius="32dp"
-            android:backgroundTint="@color/olive"
-            android:textColor="@color/white"/>
+            app:cornerRadius="31dp"
+            android:backgroundTint="@color/upr_green"
+            android:textColor="@color/white"
+            app:elevation="4dp"/>
 
-        <!-- Tarjeta de estado real -->
+        <!-- Tarjeta de estado -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            app:cardCornerRadius="14dp"
+            app:cardCornerRadius="18dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white">
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/upr_green_bg"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -181,131 +252,163 @@
 
                     <View
                         android:id="@+id/statusDot"
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
                         android:background="@drawable/dot_red"/>
 
                     <TextView
                         android:id="@+id/txtStatusTitle"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:text="Desconectado"
+                        android:text="@string/status_disconnected"
                         android:textStyle="bold"
-                        android:textSize="14sp"
-                        android:textColor="@color/olive_dark"/>
+                        android:textSize="15sp"
+                        android:textColor="@color/upr_green_dark"/>
+                </LinearLayout>
+
+                <!-- Grid de 2x2 con métricas -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingEnd="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_label_server"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"/>
+                        <TextView
+                            android:id="@+id/txtStatusServer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="—"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/upr_green_dark"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_label_connections"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"/>
+                        <TextView
+                            android:id="@+id/txtStatusConnections"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/upr_green_dark"/>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="12dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Servidor:"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"/>
+                        android:orientation="vertical"
+                        android:paddingEnd="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_label_bytes"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"/>
+                        <TextView
+                            android:id="@+id/txtStatusBytes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0 B"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/upr_green_dark"/>
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/txtStatusServer"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="—"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/olive_dark"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_label_speed"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"/>
+                        <TextView
+                            android:id="@+id/txtStatusSpeed"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="0 B/s"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/upr_green_dark"/>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
-
+                    android:layout_marginTop="12dp">
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Conexiones activas:"
-                        android:textSize="12sp"
+                        android:text="@string/status_label_uptime"
+                        android:textSize="11sp"
                         android:textColor="@color/gray_text"/>
-
-                    <TextView
-                        android:id="@+id/txtStatusConnections"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/olive_dark"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Datos enviados:"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"/>
-
-                    <TextView
-                        android:id="@+id/txtStatusBytes"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0 B"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/olive_dark"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tiempo conectado:"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"/>
-
                     <TextView
                         android:id="@+id/txtStatusUptime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="—"
-                        android:textSize="12sp"
+                        android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/olive_dark"/>
+                        android:textColor="@color/upr_green_dark"/>
                 </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Texto de versión (con modo dev oculto) -->
         <TextView
             android:id="@+id/txtVersion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta5"
+            android:text="Versión 1.0.0-beta6"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
-            android:alpha="0.7"/>
+            android:alpha="0.85"/>
 
     </LinearLayout>
 </ScrollView>

@@ -1,7 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="olive">#556B2F</color>
-    <color name="olive_dark">#3E4F22</color>
+    <color name="upr_green">#107530</color>
+    <color name="upr_green_dark">#105F2B</color>
+    <color name="upr_green_medium">#1E6F3A</color>
+    <color name="upr_green_light">#9DC0A9</color>
+    <color name="upr_green_soft">#4F8D64</color>
+    <color name="upr_green_bg">#D9E5DE</color>
+
+    <color name="olive">#107530</color>
+    <color name="olive_dark">#105F2B</color>
     <color name="white">#FFFFFF</color>
-    <color name="gray_light">#F5F5F5</color>
-    <color name="gray_text">#666666</color>
+    <color name="gray_light">#F2F6F3</color>
+    <color name="gray_text">#6B7C71</color>
+
+    <color name="status_connected">#107530</color>
+    <color name="status_idle">#F5A623</color>
+    <color name="status_disconnected">#D32F2F</color>
 </resources>

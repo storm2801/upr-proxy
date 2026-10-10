@@ -1,9 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.UPRProxy" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/olive</item>
-        <item name="colorPrimaryDark">@color/olive_dark</item>
-        <item name="colorAccent">@color/olive</item>
-        <item name="android:statusBarColor">@color/olive_dark</item>
+    <style name="Theme.UPRProxy" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/upr_green</item>
+        <item name="colorPrimaryDark">@color/upr_green_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorAccent">@color/upr_green_medium</item>
+        <item name="colorSecondary">@color/upr_green_soft</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/gray_light</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">#1A1C1A</item>
+        <item name="colorSurfaceVariant">@color/upr_green_bg</item>
+        <item name="colorOnSurfaceVariant">@color/upr_green_dark</item>
+        <item name="android:statusBarColor">@color/upr_green_dark</item>
+        <item name="android:navigationBarColor">@color/upr_green_dark</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+        <item name="textInputStyle">@style/Widget.Material3.TextInputLayout.OutlinedBox</item>
     </style>
 </resources>

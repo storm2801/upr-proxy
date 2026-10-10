@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editServer, editPort, editUser, editPassword;
     private Button btnToggle, btnTest;
     private TextView txtStatusTitle, txtStatusServer, txtStatusConnections,
-                     txtStatusBytes, txtStatusUptime, txtVersion;
+                     txtStatusBytes, txtStatusSpeed, txtStatusUptime, txtVersion;
     private android.view.View statusDot;
 
     private SharedPreferences prefs;
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         txtStatusServer = findViewById(R.id.txtStatusServer);
         txtStatusConnections = findViewById(R.id.txtStatusConnections);
         txtStatusBytes = findViewById(R.id.txtStatusBytes);
+        txtStatusSpeed = findViewById(R.id.txtStatusSpeed);
         txtStatusUptime = findViewById(R.id.txtStatusUptime);
         txtVersion = findViewById(R.id.txtVersion);
         statusDot = findViewById(R.id.statusDot);
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
             txtStatusServer.setText("—");
             txtStatusConnections.setText("0");
             txtStatusBytes.setText("0 B");
+            txtStatusSpeed.setText("0 B/s");
             txtStatusUptime.setText("—");
         }
     }
@@ -291,6 +293,8 @@ public class MainActivity extends AppCompatActivity {
         txtStatusServer.setText(ProxyStatus.serverHost + ":" + ProxyStatus.serverPort);
         txtStatusConnections.setText(String.valueOf(ProxyStatus.activeConnections.get()));
         txtStatusBytes.setText(ProxyStatus.formatBytes(ProxyStatus.bytesSent.get()));
+        ProxyStatus.updateSpeed();
+        txtStatusSpeed.setText(ProxyStatus.formatSpeed());
         txtStatusUptime.setText(ProxyStatus.formatUptime(ProxyStatus.startedAt));
 
         int conns = ProxyStatus.activeConnections.get();
