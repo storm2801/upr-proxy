@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="end|center_vertical"
+        android:paddingEnd="16dp">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkip"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onboarding_skip"
+            android:textColor="@color/upr_green_soft"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout android:id="@+id/slide1"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:orientation="vertical" android:gravity="center" android:padding="32dp">
+            <ImageView android:layout_width="140dp" android:layout_height="140dp"
+                android:src="@drawable/logo" android:contentDescription="@string/app_name"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_1_title" android:textStyle="bold"
+                android:textSize="22sp" android:textColor="@color/upr_green_dark"
+                android:layout_marginTop="24dp" android:gravity="center"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_1_desc" android:textSize="14sp"
+                android:textColor="@color/gray_text" android:layout_marginTop="12dp"
+                android:gravity="center" android:lineSpacingExtra="4dp"/>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/slide2"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:orientation="vertical" android:gravity="center" android:padding="32dp"
+            android:visibility="gone">
+            <FrameLayout android:layout_width="120dp" android:layout_height="120dp"
+                android:background="@drawable/circle_green_bg">
+                <ImageView android:layout_width="60dp" android:layout_height="60dp"
+                    android:layout_gravity="center" android:src="@drawable/ic_person"
+                    app:tint="@color/white" android:contentDescription="@string/onboarding_2_title"/>
+            </FrameLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_2_title" android:textStyle="bold"
+                android:textSize="22sp" android:textColor="@color/upr_green_dark"
+                android:layout_marginTop="24dp" android:gravity="center"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_2_desc" android:textSize="14sp"
+                android:textColor="@color/gray_text" android:layout_marginTop="12dp"
+                android:gravity="center" android:lineSpacingExtra="4dp"/>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/slide3"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:orientation="vertical" android:gravity="center" android:padding="32dp"
+            android:visibility="gone">
+            <FrameLayout android:layout_width="120dp" android:layout_height="120dp"
+                android:background="@drawable/circle_green_bg">
+                <ImageView android:layout_width="60dp" android:layout_height="60dp"
+                    android:layout_gravity="center" android:src="@drawable/ic_lock"
+                    app:tint="@color/white" android:contentDescription="@string/onboarding_3_title"/>
+            </FrameLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_3_title" android:textStyle="bold"
+                android:textSize="22sp" android:textColor="@color/upr_green_dark"
+                android:layout_marginTop="24dp" android:gravity="center"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/onboarding_3_desc" android:textSize="14sp"
+                android:textColor="@color/gray_text" android:layout_marginTop="12dp"
+                android:gravity="center" android:lineSpacingExtra="4dp"/>
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center" android:paddingBottom="16dp">
+        <View android:id="@+id/dot1" android:layout_width="10dp" android:layout_height="10dp"
+            android:layout_margin="5dp" android:background="@drawable/dot_green"/>
+        <View android:id="@+id/dot2" android:layout_width="10dp" android:layout_height="10dp"
+            android:layout_margin="5dp" android:background="@drawable/dot_gray"/>
+        <View android:id="@+id/dot3" android:layout_width="10dp" android:layout_height="10dp"
+            android:layout_margin="5dp" android:background="@drawable/dot_gray"/>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="match_parent" android:layout_height="58dp"
+        android:layout_marginStart="24dp" android:layout_marginEnd="24dp"
+        android:layout_marginBottom="32dp"
+        android:text="@string/onboarding_next"
+        android:textSize="15sp" android:textStyle="bold"
+        app:cornerRadius="29dp"
+        android:backgroundTint="@color/upr_green" android:textColor="@color/white"/>
+</LinearLayout>

@@ -100,6 +100,13 @@ public class MainActivity extends AppCompatActivity {
         prefs = SecurePrefs.get(this);
         SecurePrefs.migrateIfNeeded(this);
 
+        // ¿Primera vez? Mostrar onboarding
+        if (!prefs.getBoolean("onboarding_done", false)) {
+            startActivity(new Intent(this, OnboardingActivity.class));
+            finish();
+            return;
+        }
+
         mostrarVersion();
         configurarTapEnVersion();
         loadPrefs();
@@ -175,6 +182,11 @@ public class MainActivity extends AppCompatActivity {
 
         btnToggle.setEnabled(false);
         btnToggle.setText("Verificando proxy…");
+        // Animación: el botón pulsa mientras verifica
+        btnToggle.animate().scaleX(0.97f).scaleY(0.97f).setDuration(120)
+                .withEndAction(() -> btnToggle.animate().scaleX(1f).scaleY(1f)
+                        .setDuration(180).start())
+                .start();
         L.i("MainActivity", "Verificando proxy antes de conectar");
 
         TestConnection.run(host, port, user, pass, (ok, msg) -> {
@@ -189,11 +201,38 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 actualizarBotonYEstado();
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("No se puede conectar")
-                        .setMessage(msg + "\n\nAsegúrate de estar conectado a la red de la UPR.")
-                        .setPositiveButton("Entendido", null)
-                        .show();
+                String titulo;
+                String mensaje;
+                if (msg.contains("Timeout")) {
+                    titulo = "El proxy no responde";
+                    mensaje = "El proxy de la UPR no contesta.\n\n"
+                            + "Asegúrate de estar conectado al WiFi de la universidad y que "
+                            + "el cable de red del aula esté bien enchufado.\n\n"
+                            + "Si sigues con problemas, avisa al área de informatización.";
+                } else if (msg.contains("resolver")) {
+                    titulo = "No se encuentra el servidor";
+                    mensaje = "No se pudo resolver '" + host + "'.\n\n"
+                            + "Esto pasa normalmente cuando NO estás en la red de la UPR. "
+                            + "Conéctate al WiFi de la universidad e inténtalo de nuevo.";
+                } else if (msg.contains("Usuario o contraseña")) {
+                    titulo = "Credenciales incorrectas";
+                    mensaje = "El proxy rechazó tu usuario y contraseña.\n\n"
+                            + "Revisa que:\n"
+                            + "• El usuario esté bien escrito (sin espacios)\n"
+                            + "• La contraseña sea la del proxy (no la del correo)\n"
+                            + "• Las mayúsculas/minúsculas coincidan";
+                } else if (msg.contains("conectar a")) {
+                    titulo = "No se puede llegar al proxy";
+                    mensaje = "No hubo forma de conectar con " + host + ":" + port + ".\n\n"
+                            + "Verifica tu conexión al WiFi de la UPR.";
+                } else {
+                    titulo = "No se puede conectar";
+                    mensaje = msg + "\n\nAsegúrate de estar conectado a la red de la UPR.";
+                }
+
+                ErrorDialog.show(MainActivity.this, titulo, mensaje,
+                        getString(R.string.error_close), null,
+                        null, null);
                 L.w("MainActivity", "Cancelado: " + msg);
             }
         });
@@ -260,11 +299,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void actualizarBotonYEstado() {
+        // Animación de entrada
+        btnToggle.animate().scaleX(1.05f).scaleY(1.05f).setDuration(140)
+                .withEndAction(() -> btnToggle.animate().scaleX(1f).scaleY(1f)
+                        .setDuration(140).start())
+                .start();
+
         if (isConnected) {
             btnToggle.setText(R.string.disconnect);
             btnToggle.setBackgroundTintList(getColorStateList(R.color.olive_dark));
             txtStatusTitle.setText(R.string.status_connected);
             statusDot.setBackground(dotDrawable(R.drawable.dot_green));
+            // Animación de pulso en el punto verde
+            statusDot.animate().scaleX(1.4f).scaleY(1.4f).setDuration(400)
+                    .withEndAction(() -> statusDot.animate().scaleX(1f).scaleY(1f)
+                            .setDuration(400).start())
+                    .start();
         } else {
             btnToggle.setText(R.string.connect);
             btnToggle.setBackgroundTintList(getColorStateList(R.color.olive));
@@ -363,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
             String texto = getString(R.string.version_prefix) + " " + pi.versionName;
-            if (prefs.getBoolean(KEY_DEV_MODE, false)) texto += " (dev)";
+            if (prefs.getBoolean(KEY_DEV_MODE, false)) texto += "  •  modo dev";
             txtVersion.setText(texto);
         } catch (Exception e) {
             txtVersion.setText(getString(R.string.version_prefix) + " desconocida");
@@ -389,6 +439,24 @@ public class MainActivity extends AppCompatActivity {
                 prefs.edit().putBoolean(KEY_DEV_MODE, true).apply();
                 Toast.makeText(this, "🔓 Modo desarrollador activado.\nToca la versión para ver los logs.",
                         Toast.LENGTH_LONG).show();
+                // Vibración corta de confirmación
+                try {
+                    android.os.Vibrator vb = (android.os.Vibrator)
+                            getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vb != null && vb.hasVibrator()) {
+                        if (android.os.Build.VERSION.SDK_INT >= 26) {
+                            vb.vibrate(android.os.VibrationEffect.createOneShot(
+                                    80, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                        } else {
+                            vb.vibrate(80);
+                        }
+                    }
+                } catch (Exception ignored) {}
+                // Animación del texto de versión
+                txtVersion.animate().scaleX(1.15f).scaleY(1.15f).setDuration(150)
+                        .withEndAction(() -> txtVersion.animate()
+                                .scaleX(1f).scaleY(1f).setDuration(150).start())
+                        .start();
                 mostrarVersion();
                 tapCount = 0;
             }

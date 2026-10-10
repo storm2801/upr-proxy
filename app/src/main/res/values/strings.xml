@@ -24,4 +24,15 @@
     <string name="status_label_bytes">Datos</string>
     <string name="status_label_speed">Velocidad</string>
     <string name="status_label_uptime">Tiempo conectado</string>
+    <string name="onboarding_1_title">Bienvenido a UPR Proxy</string>
+    <string name="onboarding_1_desc">Enruta todo el tráfico de tu teléfono por el proxy corporativo de la Universidad de Pinar del Río.</string>
+    <string name="onboarding_2_title">Solo 4 datos</string>
+    <string name="onboarding_2_desc">Servidor, puerto, tu usuario y contraseña. La app los guarda cifrados en tu teléfono y no los comparte con nadie.</string>
+    <string name="onboarding_3_title">Permiso de VPN</string>
+    <string name="onboarding_3_desc">Android te pedirá permiso para crear una VPN. Es normal: sirve para que TODAS las apps (no solo el navegador) salgan por el proxy.</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_skip">Saltar</string>
+    <string name="onboarding_finish">Empezar</string>
+    <string name="error_retry">Reintentar</string>
+    <string name="error_close">Entendido</string>
 </resources>
