@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -30,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PREFS = "upr_proxy";
     private static final String KEY_DEV_MODE = "developer_mode";
-    private static final String KEY_AUTO_RECONNECT = "auto_reconnect";
     private static final int TAPS_TO_ENABLE = 7;
     private static final long TAP_TIMEOUT_MS = 5000;
     private static final long UI_REFRESH_MS = 1000;
@@ -43,9 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
     private boolean isConnected = false;
-    private boolean autoReconnectEnabled = false;
 
-    // 7 toques
     private int tapCount = 0;
     private long firstTapTime = 0;
 
@@ -57,14 +55,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    // Receptor para saber cuándo cambia el estado del servicio
     private final BroadcastReceiver stateReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) {
             syncWithService();
         }
     };
 
-    // Monitor de red para auto-reconectar
     private ConnectivityManager.NetworkCallback netCallback;
 
     private final ActivityResultLauncher<Intent> vpnLauncher =
@@ -73,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                     startVpnService();
                 } else {
                     Toast.makeText(this, "Permiso VPN denegado", Toast.LENGTH_SHORT).show();
+                    actualizarBotonYEstado();
                 }
             });
 
@@ -96,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         statusDot = findViewById(R.id.statusDot);
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        autoReconnectEnabled = prefs.getBoolean(KEY_AUTO_RECONNECT, true);
 
         mostrarVersion();
         configurarTapEnVersion();
@@ -105,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
         btnToggle.setOnClickListener(v -> toggleConnection());
         btnTest.setOnClickListener(v -> probarConexion());
 
-        // Sincronizar con el servicio por si estaba activo
         syncWithService();
         registrarMonitorRed();
     }
@@ -142,20 +137,60 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    // ---------- Estado ----------
+    // ---------- Conexión ----------
 
+    /**
+     * Antes de conectar, verificamos que el proxy responde.
+     * Si no responde, NO conectamos para evitar dejar al usuario
+     * sin internet con una VPN activa pero inútil.
+     */
     private void toggleConnection() {
         if (isConnected) {
-            stopVpnService();
-        } else {
-            savePrefs();
-            Intent intent = VpnService.prepare(MainActivity.this);
-            if (intent != null) {
-                vpnLauncher.launch(intent);
-            } else {
-                startVpnService();
-            }
+            desconectar();
+            return;
         }
+        savePrefs();
+
+        String host = editServer.getText().toString().trim();
+        String portStr = editPort.getText().toString().trim();
+        String user = editUser.getText().toString().trim();
+        String pass = editPassword.getText().toString();
+
+        if (host.isEmpty() || portStr.isEmpty()) {
+            Toast.makeText(this, "Rellena servidor y puerto", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        int port;
+        try { port = Integer.parseInt(portStr); }
+        catch (Exception e) {
+            Toast.makeText(this, "Puerto inválido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnToggle.setEnabled(false);
+        btnToggle.setText("Verificando proxy…");
+        L.i("MainActivity", "Verificando proxy antes de conectar");
+
+        TestConnection.run(host, port, user, pass, (ok, msg) -> {
+            btnToggle.setEnabled(true);
+            if (ok) {
+                // Ahora sí, lanzar la VPN
+                Intent intent = VpnService.prepare(MainActivity.this);
+                if (intent != null) {
+                    vpnLauncher.launch(intent);
+                } else {
+                    startVpnService();
+                }
+            } else {
+                actualizarBotonYEstado();
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("No se puede conectar")
+                        .setMessage(msg + "\n\nAsegúrate de estar conectado a la red de la UPR.")
+                        .setPositiveButton("Entendido", null)
+                        .show();
+                L.w("MainActivity", "Cancelado: " + msg);
+            }
+        });
     }
 
     private void startVpnService() {
@@ -163,28 +198,55 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("server", editServer.getText().toString().trim());
         intent.putExtra("port", editPort.getText().toString().trim());
         intent.putExtra("user", editUser.getText().toString().trim());
-        intent.putExtra("password", editPassword.getText().toString().trim());
+        intent.putExtra("password", editPassword.getText().toString());
         ContextCompat.startForegroundService(this, intent);
 
         isConnected = true;
         actualizarBotonYEstado();
-        L.i("MainActivity", "VPN iniciada por el usuario");
+        L.i("MainActivity", "VPN iniciada");
     }
 
-    private void stopVpnService() {
-        stopService(new Intent(this, ProxyVpnService.class));
+    /**
+     * Envía una acción STOP explícita al servicio en lugar de stopService().
+     * stopService() puede no llamar a onDestroy() a tiempo si el servicio
+     * está ocupado; la acción STOP se procesa en onStartCommand y detiene
+     * todo inmediatamente.
+     */
+    private void desconectar() {
+        L.i("MainActivity", "Solicitando desconexión");
+        Intent i = new Intent(this, ProxyVpnService.class);
+        i.setAction(ProxyVpnService.ACTION_STOP);
+        startService(i);
+
+        // Optimista: reflejarlo en la UI ya
         isConnected = false;
         actualizarBotonYEstado();
-        L.i("MainActivity", "VPN detenida por el usuario");
+
+        // Watchdog: si en 3 s sigue activo, usar stopService como plan B
+        ui.postDelayed(() -> {
+            if (ProxyStatus.vpnRunning.get()) {
+                L.w("MainActivity", "STOP no funcionó, intentando stopService");
+                stopService(new Intent(MainActivity.this, ProxyVpnService.class));
+                ui.postDelayed(() -> {
+                    if (ProxyStatus.vpnRunning.get()) {
+                        L.e("MainActivity", "El servicio no se detiene");
+                        // Forzamos la UI a mostrar desconectado aunque el
+                        // sistema mantenga el servicio un rato.
+                        ProxyStatus.vpnRunning.set(false);
+                        actualizarBotonYEstado();
+                        Toast.makeText(MainActivity.this,
+                                "El servicio tardó en detenerse. Si sigue activo, reinicia el teléfono.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }, 3000);
+            }
+        }, 3000);
     }
 
-    /** Lee el estado real del servicio VPN del sistema. */
-    private boolean isVpnServiceRunning() {
-        return ProxyStatus.vpnRunning.get();
-    }
+    // ---------- Estado en vivo ----------
 
     private void syncWithService() {
-        boolean activo = isVpnServiceRunning();
+        boolean activo = ProxyStatus.vpnRunning.get();
         if (activo != isConnected) {
             isConnected = activo;
             actualizarBotonYEstado();
@@ -214,12 +276,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshStatus() {
-        boolean activo = isVpnServiceRunning();
+        boolean activo = ProxyStatus.vpnRunning.get();
         if (activo != isConnected) {
             isConnected = activo;
             actualizarBotonYEstado();
         }
-
         if (!activo) return;
 
         txtStatusServer.setText(ProxyStatus.serverHost + ":" + ProxyStatus.serverPort);
@@ -227,16 +288,12 @@ public class MainActivity extends AppCompatActivity {
         txtStatusBytes.setText(ProxyStatus.formatBytes(ProxyStatus.bytesSent.get()));
         txtStatusUptime.setText(ProxyStatus.formatUptime(ProxyStatus.startedAt));
 
-        // Cambiar el color del punto según actividad
         int conns = ProxyStatus.activeConnections.get();
-        if (conns > 0) {
-            statusDot.setBackground(dotDrawable(R.drawable.dot_green));
-        } else {
-            statusDot.setBackground(dotDrawable(R.drawable.dot_orange));
-        }
+        statusDot.setBackground(dotDrawable(
+                conns > 0 ? R.drawable.dot_green : R.drawable.dot_orange));
     }
 
-    // ---------- Probar conexión ----------
+    // ---------- Probar ----------
 
     private void probarConexion() {
         savePrefs();
@@ -258,13 +315,11 @@ public class MainActivity extends AppCompatActivity {
 
         btnTest.setEnabled(false);
         btnTest.setText("Probando…");
-        L.i("MainActivity", "Prueba de conexión → " + host + ":" + port);
 
         TestConnection.run(host, port, user, pass, (ok, msg) -> {
             btnTest.setEnabled(true);
             btnTest.setText("Probar conexión al proxy");
             Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
-            L.i("MainActivity", "Resultado prueba: " + msg);
         });
     }
 
@@ -274,31 +329,26 @@ public class MainActivity extends AppCompatActivity {
         ConnectivityManager cm = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return;
-
         NetworkRequest req = new NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build();
-
         netCallback = new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(Network network) {
+            @Override public void onAvailable(Network network) {
                 ui.post(() -> {
-                    if (autoReconnectEnabled && isConnected && !isVpnServiceRunning()) {
+                    // Solo reconectar si el usuario tenía la VPN activa
+                    // y el servicio realmente se cayó.
+                    if (isConnected && !ProxyStatus.vpnRunning.get()) {
                         L.i("MainActivity", "Red disponible, reconectando VPN…");
                         startVpnService();
                     }
                 });
             }
         };
-
-        try {
-            cm.registerNetworkCallback(req, netCallback);
-        } catch (Exception e) {
-            L.w("MainActivity", "No se pudo registrar monitor de red: " + e.getMessage());
-        }
+        try { cm.registerNetworkCallback(req, netCallback); }
+        catch (Exception e) { L.w("MainActivity", "NetCallback: " + e.getMessage()); }
     }
 
-    // ---------- 7 toques / modo dev ----------
+    // ---------- Modo desarrollador ----------
 
     private void mostrarVersion() {
         try {
@@ -320,11 +370,8 @@ public class MainActivity extends AppCompatActivity {
             }
             long now = System.currentTimeMillis();
             if (tapCount == 0 || (now - firstTapTime) > TAP_TIMEOUT_MS) {
-                tapCount = 1;
-                firstTapTime = now;
-            } else {
-                tapCount++;
-            }
+                tapCount = 1; firstTapTime = now;
+            } else { tapCount++; }
             int restantes = TAPS_TO_ENABLE - tapCount;
             if (restantes > 0 && restantes <= 3) {
                 Toast.makeText(this, "Faltan " + restantes + " toques...", Toast.LENGTH_SHORT).show();
@@ -333,14 +380,13 @@ public class MainActivity extends AppCompatActivity {
                 prefs.edit().putBoolean(KEY_DEV_MODE, true).apply();
                 Toast.makeText(this, "🔓 Modo desarrollador activado.\nToca la versión para ver los logs.",
                         Toast.LENGTH_LONG).show();
-                L.i("MainActivity", "Modo desarrollador activado");
                 mostrarVersion();
                 tapCount = 0;
             }
         });
     }
 
-    // ---------- Preferencias ----------
+    // ---------- Prefs ----------
 
     private void loadPrefs() {
         editServer.setText(prefs.getString("server", "proxy.upr.edu.cu"));

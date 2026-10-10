@@ -8,6 +8,9 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,7 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Servidor SOCKS5 local que reenvía todas las conexiones al proxy HTTP
  * corporativo usando CONNECT + Proxy-Authorization.
  *
- * Actualiza ProxyStatus en tiempo real (conexiones activas, bytes enviados).
+ * Actualiza ProxyStatus en tiempo real y cierra agresivamente todos los
+ * sockets abiertos en stop() para que la desconexión sea inmediata.
  */
 public class Socks5HttpBridge {
 
@@ -33,6 +37,8 @@ public class Socks5HttpBridge {
     private Thread acceptThread;
     private final ExecutorService workers = Executors.newCachedThreadPool();
     private final AtomicBoolean running = new AtomicBoolean(false);
+    private final Set<Socket> openSockets =
+            Collections.synchronizedSet(new HashSet<Socket>());
 
     public Socks5HttpBridge(String host, int port, String user, String pass) {
         this.httpProxyHost = host;
@@ -53,20 +59,21 @@ public class Socks5HttpBridge {
         serverSocket.bind(new InetSocketAddress("127.0.0.1", LISTEN_PORT));
         running.set(true);
 
+        ProxyStatus.reset();
         ProxyStatus.serverHost = httpProxyHost;
         ProxyStatus.serverPort = httpProxyPort;
-        ProxyStatus.startedAt = System.currentTimeMillis();
-        ProxyStatus.reset();
         ProxyStatus.startedAt = System.currentTimeMillis();
 
         acceptThread = new Thread(this::acceptLoop, "socks5-accept");
         acceptThread.start();
-        L.i(TAG, "Puente SOCKS5→HTTP escuchando en 127.0.0.1:" + LISTEN_PORT
+        L.i(TAG, "Puente SOCKS5→HTTP en 127.0.0.1:" + LISTEN_PORT
                 + " → " + httpProxyHost + ":" + httpProxyPort);
     }
 
     public void stop() {
         running.set(false);
+
+        // 1. Cerrar server socket → desbloquea accept()
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
@@ -74,11 +81,23 @@ public class Socks5HttpBridge {
         } catch (IOException e) {
             L.w(TAG, "Error cerrando serverSocket", e);
         }
+
+        // 2. Cerrar TODOS los sockets abiertos
+        synchronized (openSockets) {
+            for (Socket s : openSockets) {
+                try { s.close(); } catch (IOException ignored) {}
+            }
+            openSockets.clear();
+        }
+
+        // 3. Interrumpir hilos
         workers.shutdownNow();
         if (acceptThread != null) {
             acceptThread.interrupt();
         }
+
         ProxyStatus.vpnRunning.set(false);
+        ProxyStatus.activeConnections.set(0);
         L.i(TAG, "Puente SOCKS5→HTTP detenido");
     }
 
@@ -86,6 +105,7 @@ public class Socks5HttpBridge {
         while (running.get()) {
             try {
                 Socket client = serverSocket.accept();
+                openSockets.add(client);
                 workers.submit(() -> handleClient(client));
             } catch (IOException e) {
                 if (running.get()) {
@@ -102,7 +122,7 @@ public class Socks5HttpBridge {
             InputStream in = client.getInputStream();
             OutputStream out = client.getOutputStream();
 
-            // Handshake SOCKS5
+            // ---- Handshake SOCKS5 ----
             byte[] hello = new byte[2];
             if (!readFully(in, hello)) return;
             if ((hello[0] & 0xFF) != 0x05) return;
@@ -113,7 +133,7 @@ public class Socks5HttpBridge {
             out.write(new byte[]{0x05, 0x00});
             out.flush();
 
-            // Petición SOCKS5
+            // ---- Petición ----
             byte[] req = new byte[4];
             if (!readFully(in, req)) return;
             if ((req[0] & 0xFF) != 0x05) return;
@@ -129,7 +149,8 @@ public class Socks5HttpBridge {
             if (atyp == 0x01) {
                 byte[] a = new byte[4];
                 if (!readFully(in, a)) return;
-                host = (a[0] & 0xFF) + "." + (a[1] & 0xFF) + "." + (a[2] & 0xFF) + "." + (a[3] & 0xFF);
+                host = (a[0] & 0xFF) + "." + (a[1] & 0xFF) + "."
+                        + (a[2] & 0xFF) + "." + (a[3] & 0xFF);
             } else if (atyp == 0x03) {
                 byte[] lenBuf = new byte[1];
                 if (!readFully(in, lenBuf)) return;
@@ -157,10 +178,12 @@ public class Socks5HttpBridge {
 
             L.d(TAG, "CONNECT → " + host + ":" + destPort);
 
-            // Conectar al proxy HTTP
+            // ---- Conectar al proxy HTTP ----
             Socket proxy = new Socket();
+            openSockets.add(proxy);
             try {
-                proxy.connect(new InetSocketAddress(httpProxyHost, httpProxyPort), CONNECT_TIMEOUT_MS);
+                proxy.connect(new InetSocketAddress(httpProxyHost, httpProxyPort),
+                        CONNECT_TIMEOUT_MS);
                 proxy.setTcpNoDelay(true);
 
                 OutputStream pOut = proxy.getOutputStream();
@@ -173,8 +196,7 @@ public class Socks5HttpBridge {
                 if (authHeader != null) {
                     sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
                 }
-                sb.append("Proxy-Connection: Keep-Alive\r\n");
-                sb.append("\r\n");
+                sb.append("Proxy-Connection: Keep-Alive\r\n\r\n");
                 byte[] reqBytes = sb.toString().getBytes("UTF-8");
                 pOut.write(reqBytes);
                 pOut.flush();
@@ -184,7 +206,6 @@ public class Socks5HttpBridge {
                 if (statusLine == null || !statusLine.contains(" 200 ")) {
                     L.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
                     sendSocksReply(out, 0x05);
-                    proxy.close();
                     return;
                 }
                 String line;
@@ -192,24 +213,26 @@ public class Socks5HttpBridge {
 
                 sendSocksReply(out, 0x00);
 
-                // Contabilizar
                 ProxyStatus.activeConnections.incrementAndGet();
                 ProxyStatus.totalConnections.incrementAndGet();
                 counted = true;
 
                 // Tubería bidireccional
-                pipe(in, pOut, client, proxy);
-                pipe(pIn, out, proxy, client);
+                pipe(in, pOut);
+                pipe(pIn, out);
 
             } catch (IOException e) {
                 L.w(TAG, "Error conectando al proxy: " + e.getMessage());
                 try { sendSocksReply(out, 0x05); } catch (IOException ignored) {}
-                proxy.close();
+            } finally {
+                openSockets.remove(proxy);
+                try { proxy.close(); } catch (IOException ignored) {}
             }
 
         } catch (IOException e) {
             L.w(TAG, "Error atendiendo cliente", e);
         } finally {
+            openSockets.remove(client);
             try { client.close(); } catch (IOException ignored) {}
             if (counted) {
                 ProxyStatus.activeConnections.decrementAndGet();
@@ -248,7 +271,8 @@ public class Socks5HttpBridge {
         return sb.toString();
     }
 
-    private void pipe(InputStream src, OutputStream dst, Socket s1, Socket s2) {
+    /** Copia bytes hasta EOF. No cierra sockets: eso lo hace handleClient. */
+    private void pipe(InputStream src, OutputStream dst) {
         byte[] buf = new byte[BUFFER_SIZE];
         try {
             int n;
@@ -257,11 +281,8 @@ public class Socks5HttpBridge {
                 dst.flush();
                 ProxyStatus.bytesSent.addAndGet(n);
             }
-        } catch (IOException e) {
-            // normal al cerrar
-        } finally {
-            try { s1.close(); } catch (IOException ignored) {}
-            try { s2.close(); } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+            // normal al cerrar la conexión
         }
     }
 }
