@@ -2,7 +2,11 @@ name: Build APK
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'fix/**'
     tags: [ 'v*' ]
   pull_request:
     branches: [ main, develop ]
@@ -39,12 +43,7 @@ jobs:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
           echo "SDK en: $ANDROID_HOME"
-          ls "$ANDROID_HOME"
-          echo ""
-          echo "Aceptando licencias..."
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
-          echo ""
-          echo "Compilando..."
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
