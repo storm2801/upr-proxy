@@ -35,6 +35,12 @@
         </activity>
 
         <activity
+            android:name=".DevMenuActivity"
+            android:exported="false"
+            android:label="Menú desarrollador"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".OnboardingActivity"
             android:exported="false"
             android:screenOrientation="portrait" />

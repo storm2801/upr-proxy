@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_light"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="16dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/logo"
+                android:contentDescription="logo"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Menú de desarrollador"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="@color/upr_green_dark"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Herramientas para personal técnico UPR"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Estado rápido -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/upr_green_bg"
+            app:strokeWidth="1dp"
+            android:layout_marginBottom="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estado actual"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textColor="@color/upr_green_dark"
+                    android:layout_marginBottom="10dp"/>
+
+                <TextView
+                    android:id="@+id/txtDevVpnState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="VPN: desconectada"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"/>
+
+                <TextView
+                    android:id="@+id/txtDevConns"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Conexiones activas: 0"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/txtDevBytes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Datos: 0 B"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/txtDevVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Versión: —"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/txtDevDevice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dispositivo: —"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Sección: Diagnóstico -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DIAGNÓSTICO"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/upr_green_soft"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="4dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewLogs"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Ver logs en vivo"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            android:backgroundTint="@color/upr_green"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopyLogs"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Copiar todos los logs"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestConn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Probar conexión al proxy"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSystemInfo"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Información del sistema"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Sección: Mantenimiento -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MANTENIMIENTO"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/upr_green_soft"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="4dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnForceReconnect"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Forzar reconexión VPN"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearLogs"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Borrar todos los logs"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnResetPrefs"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Borrar credenciales guardadas"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="#D32F2F"
+            app:strokeColor="#D32F2F"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnResetOnboarding"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Volver a mostrar onboarding"
+            android:textSize="14sp"
+            app:cornerRadius="14dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Salir -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExitDev"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Salir del modo desarrollador"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            android:backgroundTint="#B71C1C"
+            android:textColor="@color/white"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

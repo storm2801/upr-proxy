@@ -134,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             registerReceiver(stateReceiver, f);
         }
+        // Refrescar texto de versión (por si salimos del modo dev en otra pantalla)
+        mostrarVersion();
         syncWithService();
         ui.post(refreshRunnable);
     }
@@ -436,7 +438,7 @@ public class MainActivity extends AppCompatActivity {
         txtVersion.setOnClickListener(v -> {
             boolean devMode = prefs.getBoolean(KEY_DEV_MODE, false);
             if (devMode) {
-                startActivity(new Intent(MainActivity.this, LogsActivity.class));
+                startActivity(new Intent(MainActivity.this, DevMenuActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return;
             }
@@ -446,12 +448,12 @@ public class MainActivity extends AppCompatActivity {
             } else { tapCount++; }
             int restantes = TAPS_TO_ENABLE - tapCount;
             if (restantes > 0 && restantes <= 3) {
-                Toast.makeText(this, "Faltan " + restantes + " toques...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Faltan " + restantes, Toast.LENGTH_SHORT).show();
             }
             if (tapCount >= TAPS_TO_ENABLE) {
                 prefs.edit().putBoolean(KEY_DEV_MODE, true).apply();
-                Toast.makeText(this, "🔓 Modo desarrollador activado.\nToca la versión para ver los logs.",
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "🔓 Modo desarrollador activado",
+                        Toast.LENGTH_SHORT).show();
                 // Vibración corta de confirmación
                 try {
                     android.os.Vibrator vb = (android.os.Vibrator)
