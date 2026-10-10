@@ -218,8 +218,8 @@ public class Socks5HttpBridge {
                 counted = true;
 
                 // Tubería bidireccional
-                pipe(in, pOut);
-                pipe(pIn, out);
+                pipe(in, pOut, false);  // subida cliente → proxy
+                pipe(pIn, out, true);   // bajada proxy → cliente
 
             } catch (IOException e) {
                 L.w(TAG, "Error conectando al proxy: " + e.getMessage());
@@ -272,14 +272,18 @@ public class Socks5HttpBridge {
     }
 
     /** Copia bytes hasta EOF. No cierra sockets: eso lo hace handleClient. */
-    private void pipe(InputStream src, OutputStream dst) {
+    private void pipe(InputStream src, OutputStream dst, boolean isDownstream) {
         byte[] buf = new byte[BUFFER_SIZE];
         try {
             int n;
             while ((n = src.read(buf)) != -1) {
                 dst.write(buf, 0, n);
                 dst.flush();
-                ProxyStatus.bytesSent.addAndGet(n);
+                if (isDownstream) {
+                    ProxyStatus.bytesReceived.addAndGet(n);
+                } else {
+                    ProxyStatus.bytesSent.addAndGet(n);
+                }
             }
         } catch (IOException ignored) {
             // normal al cerrar la conexión

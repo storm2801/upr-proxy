@@ -26,12 +26,15 @@ public class LogsActivity extends AppCompatActivity {
     private RecyclerView recycler;
     private TextView txtEmpty;
     private LogsAdapter adapter;
+    private char filterLevel = 'A'; // 'A' = All
     private final Handler ui = new Handler(Looper.getMainLooper());
 
     private final LogBuffer.Listener listener = entry -> ui.post(() -> {
-        adapter.add(entry);
-        recycler.scrollToPosition(adapter.getItemCount() - 1);
-        updateEmpty();
+        if (filterLevel == 'A' || entry.level == filterLevel) {
+            adapter.add(entry);
+            recycler.scrollToPosition(adapter.getItemCount() - 1);
+            updateEmpty();
+        }
     });
 
     @Override
@@ -69,6 +72,31 @@ public class LogsActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btnExitDev).setOnClickListener(v -> confirmarSalida());
+
+        com.google.android.material.chip.ChipGroup cg = findViewById(R.id.chipGroup);
+        cg.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            int id = checkedIds.get(0);
+            if (id == R.id.chipInfo) filterLevel = 'I';
+            else if (id == R.id.chipWarn) filterLevel = 'W';
+            else if (id == R.id.chipError) filterLevel = 'E';
+            else filterLevel = 'A';
+            aplicarFiltro();
+        });
+    }
+
+    private void aplicarFiltro() {
+        List<LogBuffer.Entry> all = LogBuffer.snapshot();
+        if (filterLevel == 'A') {
+            adapter.setAll(all);
+        } else {
+            List<LogBuffer.Entry> filtered = new ArrayList<>();
+            for (LogBuffer.Entry e : all) {
+                if (e.level == filterLevel) filtered.add(e);
+            }
+            adapter.setAll(filtered);
+        }
+        updateEmpty();
     }
 
     private void updateEmpty() {

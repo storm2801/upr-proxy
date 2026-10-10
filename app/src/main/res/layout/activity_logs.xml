@@ -72,6 +72,48 @@
 
     </LinearLayout>
 
+    <!-- Chips de filtro por nivel -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:background="@color/white"
+        app:singleSelection="true"
+        app:selectionRequired="true"
+        app:singleLine="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAll"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Todos"
+            android:checked="true"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipInfo"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Info"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipWarn"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Avisos"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipError"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Errores"/>
+    </com.google.android.material.chip.ChipGroup>
+
     <TextView
         android:id="@+id/txtEmpty"
         android:layout_width="match_parent"

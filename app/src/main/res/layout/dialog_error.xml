@@ -5,6 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
+    android:background="@drawable/dialog_card_bg"
+    android:elevation="8dp"
     android:gravity="center_horizontal">
 
     <FrameLayout
@@ -15,7 +17,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="center"
-            android:src="@android:drawable/ic_dialog_alert"
+            android:src="@drawable/ic_error_notification"
             app:tint="@color/white"
             android:contentDescription="error"/>
     </FrameLayout>

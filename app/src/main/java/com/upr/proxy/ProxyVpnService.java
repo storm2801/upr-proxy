@@ -167,20 +167,29 @@ public class ProxyVpnService extends VpnService {
         PendingIntent piDisc = PendingIntent.getService(this, 1, disc,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        String sub = "▲ " + ProxyStatus.formatSpeed() + "  •  "
-                + ProxyStatus.activeConnections.get() + " conexiones  •  "
-                + ProxyStatus.formatBytes(ProxyStatus.bytesSent.get());
+        String title = "UPR Proxy activo";
+        String sub = "↑ " + ProxyStatus.formatSpeedUp()
+                + "  ↓ " + ProxyStatus.formatSpeedDown()
+                + "  •  " + ProxyStatus.activeConnections.get() + " conexiones";
+
+        String bigText =
+                "Servidor: " + proxyServer + ":" + proxyPort
+                + "\n\n"
+                + "↑  Subida: " + ProxyStatus.formatSpeedUp()
+                + "\n"
+                + "↓  Bajada: " + ProxyStatus.formatSpeedDown()
+                + "\n\n"
+                + "Conexiones: " + ProxyStatus.activeConnections.get()
+                + "\n"
+                + "Datos totales: " + ProxyStatus.formatBytes(
+                        ProxyStatus.bytesSent.get() + ProxyStatus.bytesReceived.get())
+                + "\n"
+                + "Tiempo: " + ProxyStatus.formatUptime(ProxyStatus.startedAt);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("UPR Proxy activo")
-                .setContentText("Proxy: " + proxyServer + ":" + proxyPort)
-                .setSubText(sub)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Proxy: " + proxyServer + ":" + proxyPort
-                                + "\nVelocidad: " + ProxyStatus.formatSpeed()
-                                + "\nConexiones activas: " + ProxyStatus.activeConnections.get()
-                                + "\nDatos transferidos: " + ProxyStatus.formatBytes(ProxyStatus.bytesSent.get())
-                                + "\nTiempo conectado: " + ProxyStatus.formatUptime(ProxyStatus.startedAt)))
+                .setContentTitle(title)
+                .setContentText(sub)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(bigText))
                 .setSmallIcon(R.drawable.ic_notification)
                 .setColor(0xFF107530)
                 .setContentIntent(pi)

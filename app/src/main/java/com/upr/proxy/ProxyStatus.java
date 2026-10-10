@@ -11,13 +11,17 @@ public class ProxyStatus {
     public static volatile int serverPort = 0;
     public static final AtomicInteger activeConnections = new AtomicInteger(0);
     public static final AtomicLong bytesSent = new AtomicLong(0);
+    public static final AtomicLong bytesReceived = new AtomicLong(0);
     public static final AtomicLong totalConnections = new AtomicLong(0);
     public static volatile long startedAt = 0;
 
     // Cálculo de velocidad
     private static final AtomicLong lastBytes = new AtomicLong(0);
     private static final AtomicLong lastCheck = new AtomicLong(0);
-    public static volatile long speedBps = 0;
+    public static volatile long speedBps = 0;         // total (compatibilidad)
+    public static volatile long speedUpBps = 0;       // subida
+    public static volatile long speedDownBps = 0;     // bajada
+    private static final AtomicLong lastBytesRx = new AtomicLong(0);
 
     public static void reset() {
         activeConnections.set(0);
@@ -25,8 +29,12 @@ public class ProxyStatus {
         totalConnections.set(0);
         startedAt = 0;
         lastBytes.set(0);
+        lastBytesRx.set(0);
         lastCheck.set(0);
         speedBps = 0;
+        speedUpBps = 0;
+        speedDownBps = 0;
+        bytesReceived.set(0);
     }
 
     /** Llamar periódicamente (1 vez por segundo) para calcular la velocidad. */
@@ -40,11 +48,17 @@ public class ProxyStatus {
         }
         long dt = now - last;
         if (dt >= 800) {
-            long currentBytes = bytesSent.get();
-            long dBytes = currentBytes - lastBytes.get();
-            if (dBytes < 0) dBytes = 0;
-            speedBps = (dBytes * 1000) / dt;
-            lastBytes.set(currentBytes);
+            long currentTx = bytesSent.get();
+            long currentRx = bytesReceived.get();
+            long dTx = currentTx - lastBytes.get();
+            long dRx = currentRx - lastBytesRx.get();
+            if (dTx < 0) dTx = 0;
+            if (dRx < 0) dRx = 0;
+            speedUpBps = (dTx * 1000) / dt;
+            speedDownBps = (dRx * 1000) / dt;
+            speedBps = speedUpBps + speedDownBps;
+            lastBytes.set(currentTx);
+            lastBytesRx.set(currentRx);
             lastCheck.set(now);
         }
     }
@@ -58,6 +72,20 @@ public class ProxyStatus {
 
     public static String formatSpeed() {
         long s = speedBps;
+        if (s < 1024) return s + " B/s";
+        if (s < 1024 * 1024) return String.format("%.1f KB/s", s / 1024.0);
+        return String.format("%.1f MB/s", s / (1024.0 * 1024));
+    }
+
+    public static String formatSpeedUp() {
+        long s = speedUpBps;
+        if (s < 1024) return s + " B/s";
+        if (s < 1024 * 1024) return String.format("%.1f KB/s", s / 1024.0);
+        return String.format("%.1f MB/s", s / (1024.0 * 1024));
+    }
+
+    public static String formatSpeedDown() {
+        long s = speedDownBps;
         if (s < 1024) return s + " B/s";
         if (s < 1024 * 1024) return String.format("%.1f KB/s", s / 1024.0);
         return String.format("%.1f MB/s", s / (1024.0 * 1024));

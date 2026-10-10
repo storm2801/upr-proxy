@@ -25,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText editServer, editPort, editUser, editPassword;
     private Button btnToggle, btnTest;
+    private android.widget.ProgressBar spinnerToggle;
+    private com.upr.proxy.SparklineView sparkline;
     private TextView txtStatusTitle, txtStatusServer, txtStatusConnections,
                      txtStatusBytes, txtStatusSpeed, txtStatusUptime, txtVersion;
     private android.view.View statusDot;
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
         // Bloquear screenshots y vista previa en 'Apps recientes'
         getWindow().setFlags(
@@ -87,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
         editUser = findViewById(R.id.editUser);
         editPassword = findViewById(R.id.editPassword);
         btnToggle = findViewById(R.id.btnToggle);
+        spinnerToggle = findViewById(R.id.spinnerToggle);
+        sparkline = findViewById(R.id.sparkline);
         btnTest = findViewById(R.id.btnTest);
         txtStatusTitle = findViewById(R.id.txtStatusTitle);
         txtStatusServer = findViewById(R.id.txtStatusServer);
@@ -103,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // ¿Primera vez? Mostrar onboarding
         if (!prefs.getBoolean("onboarding_done", false)) {
             startActivity(new Intent(this, OnboardingActivity.class));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
             return;
         }
@@ -182,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnToggle.setEnabled(false);
         btnToggle.setText("Verificando proxy…");
+        if (spinnerToggle != null) spinnerToggle.setVisibility(android.view.View.VISIBLE);
         // Animación: el botón pulsa mientras verifica
         btnToggle.animate().scaleX(0.97f).scaleY(0.97f).setDuration(120)
                 .withEndAction(() -> btnToggle.animate().scaleX(1f).scaleY(1f)
@@ -191,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
         TestConnection.run(host, port, user, pass, (ok, msg) -> {
             btnToggle.setEnabled(true);
+            if (spinnerToggle != null) spinnerToggle.setVisibility(android.view.View.GONE);
             if (ok) {
                 // Ahora sí, lanzar la VPN
                 Intent intent = VpnService.prepare(MainActivity.this);
@@ -325,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
             txtStatusBytes.setText("0 B");
             txtStatusSpeed.setText("0 B/s");
             txtStatusUptime.setText("—");
+            if (sparkline != null) sparkline.clear();
         }
     }
 
@@ -344,7 +354,9 @@ public class MainActivity extends AppCompatActivity {
         txtStatusConnections.setText(String.valueOf(ProxyStatus.activeConnections.get()));
         txtStatusBytes.setText(ProxyStatus.formatBytes(ProxyStatus.bytesSent.get()));
         ProxyStatus.updateSpeed();
-        txtStatusSpeed.setText(ProxyStatus.formatSpeed());
+        txtStatusSpeed.setText("↑ " + ProxyStatus.formatSpeedUp()
+                    + "  ↓ " + ProxyStatus.formatSpeedDown());
+        if (sparkline != null) sparkline.push(ProxyStatus.speedBps);
         txtStatusUptime.setText(ProxyStatus.formatUptime(ProxyStatus.startedAt));
 
         int conns = ProxyStatus.activeConnections.get();
@@ -425,6 +437,7 @@ public class MainActivity extends AppCompatActivity {
             boolean devMode = prefs.getBoolean(KEY_DEV_MODE, false);
             if (devMode) {
                 startActivity(new Intent(MainActivity.this, LogsActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return;
             }
             long now = System.currentTimeMillis();

@@ -73,7 +73,7 @@ public class OnboardingActivity extends AppCompatActivity {
     private void terminar() {
         SecurePrefs.get(this).edit().putBoolean("onboarding_done", true).apply();
         startActivity(new Intent(this, MainActivity.class));
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         finish();
     }
 }
