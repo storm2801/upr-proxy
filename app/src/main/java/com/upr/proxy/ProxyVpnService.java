@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
@@ -61,7 +60,7 @@ public class ProxyVpnService extends VpnService {
 
             vpnInterface = builder.establish();
             if (vpnInterface == null) {
-                Log.e(TAG, "No se pudo establecer la interfaz VPN");
+                L.e(TAG, "No se pudo establecer la interfaz VPN");
                 stopSelf();
                 return;
             }
@@ -71,10 +70,10 @@ public class ProxyVpnService extends VpnService {
             vpnThread = new Thread(forwarder, "upr-proxy-forwarder");
             vpnThread.start();
 
-            Log.i(TAG, "VPN activa → proxy " + proxyServer + ":" + proxyPort);
+            L.i(TAG, "VPN activa → proxy " + proxyServer + ":" + proxyPort);
 
         } catch (Exception e) {
-            Log.e(TAG, "Error al iniciar VPN", e);
+            L.e(TAG, "Error al iniciar VPN", e);
             stopSelf();
         }
     }
@@ -105,7 +104,7 @@ public class ProxyVpnService extends VpnService {
     @Override
     public void onRevoke() {
         // El sistema revocó el permiso VPN (por ejemplo, otra VPN tomó el control)
-        Log.w(TAG, "VPN revocada por el sistema");
+        L.w(TAG, "VPN revocada por el sistema");
         shutdownEverything();
         super.onRevoke();
     }

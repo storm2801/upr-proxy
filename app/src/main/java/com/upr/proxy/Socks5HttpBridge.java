@@ -1,7 +1,6 @@
 package com.upr.proxy;
 
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +61,7 @@ public class Socks5HttpBridge {
 
         acceptThread = new Thread(this::acceptLoop, "socks5-accept");
         acceptThread.start();
-        Log.i(TAG, "Puente SOCKS5→HTTP escuchando en 127.0.0.1:" + LISTEN_PORT
+        L.i(TAG, "Puente SOCKS5→HTTP escuchando en 127.0.0.1:" + LISTEN_PORT
                 + " → " + httpProxyHost + ":" + httpProxyPort);
     }
 
@@ -73,13 +72,13 @@ public class Socks5HttpBridge {
                 serverSocket.close();
             }
         } catch (IOException e) {
-            Log.w(TAG, "Error cerrando serverSocket", e);
+            L.w(TAG, "Error cerrando serverSocket", e);
         }
         workers.shutdownNow();
         if (acceptThread != null) {
             acceptThread.interrupt();
         }
-        Log.i(TAG, "Puente SOCKS5→HTTP detenido");
+        L.i(TAG, "Puente SOCKS5→HTTP detenido");
     }
 
     private void acceptLoop() {
@@ -89,7 +88,7 @@ public class Socks5HttpBridge {
                 workers.submit(() -> handleClient(client));
             } catch (IOException e) {
                 if (running.get()) {
-                    Log.w(TAG, "Error aceptando conexión", e);
+                    L.w(TAG, "Error aceptando conexión", e);
                 }
             }
         }
@@ -157,7 +156,7 @@ public class Socks5HttpBridge {
             if (!readFully(in, portBuf)) return;
             int destPort = ((portBuf[0] & 0xFF) << 8) | (portBuf[1] & 0xFF);
 
-            Log.d(TAG, "CONNECT → " + host + ":" + destPort);
+            L.d(TAG, "CONNECT → " + host + ":" + destPort);
 
             // --- Conectar al proxy HTTP ---
             Socket proxy = new Socket();
@@ -184,7 +183,7 @@ public class Socks5HttpBridge {
                 // Leer respuesta del proxy (primera línea + cabeceras hasta \r\n\r\n)
                 String statusLine = readLine(pIn);
                 if (statusLine == null || !statusLine.contains(" 200 ")) {
-                    Log.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
+                    L.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
                     sendSocksReply(out, 0x05); // connection refused
                     proxy.close();
                     return;
@@ -203,13 +202,13 @@ public class Socks5HttpBridge {
                 pipe(pIn, out, proxy, client);
 
             } catch (IOException e) {
-                Log.w(TAG, "Error conectando al proxy: " + e.getMessage());
+                L.w(TAG, "Error conectando al proxy: " + e.getMessage());
                 try { sendSocksReply(out, 0x05); } catch (IOException ignored) {}
                 proxy.close();
             }
 
         } catch (IOException e) {
-            Log.w(TAG, "Error atendiendo cliente", e);
+            L.w(TAG, "Error atendiendo cliente", e);
         } finally {
             try { client.close(); } catch (IOException ignored) {}
         }

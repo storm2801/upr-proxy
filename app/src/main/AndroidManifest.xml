@@ -32,5 +32,11 @@
             </intent-filter>
         </service>
 
+            <activity
+            android:name=".LogsActivity"
+            android:exported="false"
+            android:label="Logs UPR Proxy"
+            android:parentActivityName=".MainActivity" />
+
     </application>
 </manifest>

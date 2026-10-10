@@ -152,7 +152,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta1"
+            android:text="Versión 1.0.0-beta2"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:alpha="0.7"/>

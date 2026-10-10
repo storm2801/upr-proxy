@@ -2,7 +2,6 @@ package com.upr.proxy;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import org.amnezia.awg.hevtunnel.TProxyService;
 
@@ -49,7 +48,7 @@ public class ProxyForwarder implements Runnable {
             // ---- 1. Arrancar el puente SOCKS5→HTTP ----
             bridge = new Socks5HttpBridge(proxyHost, proxyPort, proxyUser, proxyPassword);
             bridge.start();
-            Log.i(TAG, "Puente SOCKS5→HTTP iniciado en 127.0.0.1:1080");
+            L.i(TAG, "Puente SOCKS5→HTTP iniciado en 127.0.0.1:1080");
 
             // ---- 2. Escribir config del túnel ----
             File cfg = new File(context.getCacheDir(), "hev.yaml");
@@ -73,12 +72,12 @@ public class ProxyForwarder implements Runnable {
 
             // ---- 3. Arrancar el motor nativo ----
             int tunFd = vpnInterface.getFd();
-            Log.i(TAG, "Llamando TProxyStartService(fd=" + tunFd + ")");
+            L.i(TAG, "Llamando TProxyStartService(fd=" + tunFd + ")");
             TProxyService.TProxyStartService(cfg.getAbsolutePath(), tunFd);
-            Log.i(TAG, "TProxyStartService OK — el tráfico debería fluir");
+            L.i(TAG, "TProxyStartService OK — el tráfico debería fluir");
 
         } catch (Throwable t) {
-            Log.e(TAG, "Error arrancando el túnel", t);
+            L.e(TAG, "Error arrancando el túnel", t);
         }
     }
 
@@ -86,9 +85,9 @@ public class ProxyForwarder implements Runnable {
     public void shutdown() {
         try {
             TProxyService.TProxyStopService();
-            Log.i(TAG, "TProxyStopService OK");
+            L.i(TAG, "TProxyStopService OK");
         } catch (Throwable t) {
-            Log.w(TAG, "TProxyStopService falló: " + t.getMessage());
+            L.w(TAG, "TProxyStopService falló: " + t.getMessage());
         }
         if (bridge != null) {
             bridge.stop();
