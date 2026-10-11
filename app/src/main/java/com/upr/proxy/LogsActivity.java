@@ -71,8 +71,6 @@ public class LogsActivity extends AppCompatActivity {
             L.i("LogsActivity", "Logs borrados por el usuario");
         });
 
-        findViewById(R.id.btnExitDev).setOnClickListener(v -> confirmarSalida());
-
         com.google.android.material.chip.ChipGroup cg = findViewById(R.id.chipGroup);
         cg.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) return;
@@ -132,24 +130,6 @@ public class LogsActivity extends AppCompatActivity {
                 }
             }, 60000);
         }
-    }
-
-    private void confirmarSalida() {
-        new AlertDialog.Builder(this)
-                .setTitle("Salir del modo desarrollador")
-                .setMessage("Se desactivará el acceso a esta pantalla.\n\n" +
-                        "Para volver a activarlo, toca 7 veces el texto de la versión " +
-                        "en la pantalla principal.")
-                .setPositiveButton("Salir", (d, w) -> {
-                    SecurePrefs.get(LogsActivity.this)
-                            .edit().putBoolean("developer_mode", false).apply();
-                    L.i("LogsActivity", "Modo desarrollador desactivado");
-                    Toast.makeText(this, "Modo desarrollador desactivado",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .setNegativeButton("Cancelar", null)
-                .show();
     }
 
     @Override

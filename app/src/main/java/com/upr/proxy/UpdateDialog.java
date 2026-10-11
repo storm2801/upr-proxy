@@ -23,16 +23,10 @@ import androidx.core.content.FileProvider;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
-/**
- * Diálogos del sistema de actualización.
- *
- *  1. showAvailable()          → hay nueva versión (diálogo bonito con changelog)
- *  2. showPermissionRequired() → falta permiso para instalar APK (abre Ajustes)
- *  3. showProgress()           → descarga con barra de progreso
- *  4. updateProgress()         → actualiza la barra
- *  5. installApk()             → abre el instalador (SOLO cuando ya hay permiso)
- */
 public class UpdateDialog {
 
     // ---------- 1. Diálogo de nueva versión disponible ----------
@@ -61,11 +55,8 @@ public class UpdateDialog {
 
         tvCurrent.setText(getCurrentVersion(ctx));
         tvNew.setText(info.versionName);
-        tvDate.setText(info.publishedAt == null || info.publishedAt.isEmpty()
-                ? "—" : info.publishedAt);
-        tvChangelog.setText(info.changelog == null || info.changelog.isEmpty()
-                ? "Mejoras de rendimiento y estabilidad."
-                : info.changelog);
+        tvDate.setText(formatDate(info.publishedAt));
+        tvChangelog.setText(formatChangelog(info.changelog));
 
         btnNow.setOnClickListener(x -> {
             d.dismiss();
@@ -77,14 +68,49 @@ public class UpdateDialog {
         d.show();
     }
 
+    /** Convierte "2026-10-10" en "Publicada el 10 de octubre de 2026". */
+    private static String formatDate(String iso) {
+        if (iso == null || iso.isEmpty()) return "";
+        try {
+            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            Date d = in.parse(iso);
+            SimpleDateFormat out = new SimpleDateFormat("d 'de' MMMM 'de' yyyy",
+                    new Locale("es", "ES"));
+            return "Publicada el " + out.format(d);
+        } catch (Exception e) {
+            return "Publicada el " + iso;
+        }
+    }
+
+    /** Normaliza el changelog: asegura que cada línea empiece con "• ". */
+    private static String formatChangelog(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return "• Mejoras de rendimiento y estabilidad.";
+        }
+        String[] lines = raw.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (String l : lines) {
+            String t = l.trim();
+            if (t.isEmpty()) continue;
+            if (t.startsWith("•") || t.startsWith("-") || t.startsWith("*")) {
+                sb.append("• ").append(t.replaceFirst("^[•\\-\\*]\\s*", "")).append('\n');
+            } else {
+                sb.append("• ").append(t).append('\n');
+            }
+        }
+        // Quitar salto final
+        if (sb.length() > 0) sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
     // ---------- 2. Diálogo pidiendo permiso para instalar APKs ----------
 
     public static void showPermissionRequired(AppCompatActivity ctx) {
         new AlertDialog.Builder(ctx)
-                .setTitle("Permiso necesario para actualizar")
+                .setTitle("Permiso necesario")
                 .setMessage(
-                    "Para instalar la actualización, primero debes permitir que "
-                    + "UPR Proxy instale apps desconocidas.\n\n"
+                    "Para instalar la actualización, primero debes permitir "
+                    + "que UPR Proxy instale apps desconocidas.\n\n"
                     + "Se abrirá la pantalla de Ajustes. Activa el interruptor y "
                     + "vuelve a esta app: la descarga empezará automáticamente."
                 )
@@ -99,7 +125,6 @@ public class UpdateDialog {
             i.setData(Uri.parse("package:" + ctx.getPackageName()));
             ctx.startActivity(i);
         } catch (Exception e) {
-            // Fallback: abrir la pantalla genérica de seguridad
             try {
                 ctx.startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS));
             } catch (Exception e2) {
@@ -144,14 +169,9 @@ public class UpdateDialog {
         }
     }
 
-    // ---------- 4. Instalar el APK (permiso ya garantizado) ----------
+    // ---------- 4. Instalar el APK ----------
 
-    /**
-     * Abre el instalador del sistema. Solo debe llamarse DESPUÉS de que
-     * el usuario haya concedido REQUEST_INSTALL_PACKAGES.
-     */
     public static void installApk(AppCompatActivity ctx, File apkFile) {
-        // Doble check defensivo por si acaso
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!ctx.getPackageManager().canRequestPackageInstalls()) {
                 showPermissionRequired(ctx);

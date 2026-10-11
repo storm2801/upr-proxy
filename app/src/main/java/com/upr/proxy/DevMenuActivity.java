@@ -24,6 +24,22 @@ public class DevMenuActivity extends AppCompatActivity {
     private TextView txtDevVpnState, txtDevConns, txtDevBytes,
                      txtDevVersion, txtDevDevice;
 
+    private Toast currentToast;
+    private final Runnable dismissToast = () -> {
+        if (currentToast != null) {
+            currentToast.cancel();
+            currentToast = null;
+        }
+    };
+
+    private void quickToast(String msg) {
+        ui.removeCallbacks(dismissToast);
+        if (currentToast != null) currentToast.cancel();
+        currentToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        currentToast.show();
+        ui.postDelayed(dismissToast, 900);
+    }
+
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable refresher = new Runnable() {
         @Override public void run() {
@@ -95,14 +111,13 @@ public class DevMenuActivity extends AppCompatActivity {
         findViewById(R.id.btnClearLogs).setOnClickListener(v -> {
             LogBuffer.clear();
             L.i("DevMenu", "Logs borrados");
-            Toast.makeText(this, "Logs borrados", Toast.LENGTH_SHORT).show();
+            quickToast("Logs borrados");
         });
 
         findViewById(R.id.btnResetOnboarding).setOnClickListener(v -> {
             SecurePrefs.get(this).edit().putBoolean("onboarding_done", false).apply();
             L.i("DevMenu", "Onboarding reactivado");
-            Toast.makeText(this, "Onboarding se mostrará al abrir",
-                    Toast.LENGTH_SHORT).show();
+            quickToast("Onboarding reactivado");
         });
 
         findViewById(R.id.btnResetPrefs).setOnClickListener(v -> {
@@ -150,6 +165,13 @@ public class DevMenuActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         ui.removeCallbacks(refresher);
+    }
+
+    @Override
+    protected void onDestroy() {
+        ui.removeCallbacks(dismissToast);
+        if (currentToast != null) currentToast.cancel();
+        super.onDestroy();
     }
 
     // ---------- Estado en vivo ----------
@@ -349,7 +371,7 @@ public class DevMenuActivity extends AppCompatActivity {
                     stop.setAction(ProxyVpnService.ACTION_STOP);
                     startService(stop);
                     L.i("DevMenu", "Forzando reconexión VPN");
-                    Toast.makeText(this, "Reconectando…", Toast.LENGTH_SHORT).show();
+                    quickToast("Reconectando…");
 
                     ui.postDelayed(() -> {
                         SharedPreferences p = SecurePrefs.get(this);
@@ -379,8 +401,7 @@ public class DevMenuActivity extends AppCompatActivity {
                     startService(stop);
 
                     L.w("DevMenu", "Credenciales borradas");
-                    Toast.makeText(this, "Credenciales borradas",
-                            Toast.LENGTH_SHORT).show();
+                    quickToast("Credenciales borradas");
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -395,7 +416,7 @@ public class DevMenuActivity extends AppCompatActivity {
                     SecurePrefs.get(this).edit()
                             .putBoolean("developer_mode", false).apply();
                     L.i("DevMenu", "Modo desarrollador desactivado");
-                    Toast.makeText(this, "Modo dev desactivado", Toast.LENGTH_SHORT).show();
+                    quickToast("Modo dev desactivado");
                     ui.postDelayed(() -> {
                         finish();
                         overridePendingTransition(android.R.anim.fade_in,

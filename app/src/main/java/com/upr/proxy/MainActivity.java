@@ -55,6 +55,23 @@ public class MainActivity extends AppCompatActivity {
     private boolean waitingInstallPermission = false;
     private boolean hasResumedOnce = false;
 
+    // Toast rápido que se cancela solo para no encolarse
+    private Toast currentToast;
+    private final Runnable dismissToast = () -> {
+        if (currentToast != null) {
+            currentToast.cancel();
+            currentToast = null;
+        }
+    };
+
+    private void quickToast(String msg) {
+        ui.removeCallbacks(dismissToast);
+        if (currentToast != null) currentToast.cancel();
+        currentToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        currentToast.show();
+        ui.postDelayed(dismissToast, 900);
+    }
+
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable refreshRunnable = new Runnable() {
         @Override public void run() {
@@ -518,14 +535,9 @@ public class MainActivity extends AppCompatActivity {
             if (tapCount == 0 || (now - firstTapTime) > TAP_TIMEOUT_MS) {
                 tapCount = 1; firstTapTime = now;
             } else { tapCount++; }
-            int restantes = TAPS_TO_ENABLE - tapCount;
-            if (restantes > 0 && restantes <= 3) {
-                Toast.makeText(this, "Faltan " + restantes, Toast.LENGTH_SHORT).show();
-            }
             if (tapCount >= TAPS_TO_ENABLE) {
                 prefs.edit().putBoolean(KEY_DEV_MODE, true).apply();
-                Toast.makeText(this, "🔓 Modo desarrollador activado",
-                        Toast.LENGTH_SHORT).show();
+                quickToast("Modo desarrollador activado");
                 try {
                     android.os.Vibrator vb = (android.os.Vibrator)
                             getSystemService(Context.VIBRATOR_SERVICE);
