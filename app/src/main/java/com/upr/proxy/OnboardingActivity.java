@@ -18,9 +18,7 @@ public class OnboardingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(
-                android.view.WindowManager.LayoutParams.FLAG_SECURE,
-                android.view.WindowManager.LayoutParams.FLAG_SECURE);
+        // FLAG_SECURE eliminado: se permiten capturas de pantalla
         setContentView(R.layout.activity_onboarding);
 
         slide1 = findViewById(R.id.slide1);
