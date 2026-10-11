@@ -1,14 +1,22 @@
+# Normalizar saltos de línea
 * text=auto eol=lf
-*.apk binary
-*.aab binary
-*.so binary
-*.aar binary
-*.jar binary
+
+# Binarios
 *.png binary
 *.jpg binary
 *.jpeg binary
-*.gif binary
-*.ico binary
-android-sdk/** linguist-vendored
-gradle-8.2/** linguist-vendored
-app/build/** linguist-generated
+*.webp binary
+*.apk binary
+*.jar binary
+*.jks binary
+
+# Scripts ejecutables
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Windows
+*.bat text eol=crlf
+gradlew.bat text eol=crlf
+
+# Evitar diffs de lockfiles
+package-lock.json -diff
