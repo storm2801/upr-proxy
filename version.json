@@ -1,8 +1,8 @@
 {
-  "versionCode": 15,
-  "versionName": "1.0.0-beta15",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta15/UPRProxy-1.0.0-beta15-release.apk",
-  "changelog": "Nueva versión 1.0.0-beta15 disponible. Consulta el CHANGELOG para más detalles.",
+  "versionCode": 16,
+  "versionName": "1.0.0-beta16",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta16/UPRProxy-1.0.0-beta16-release.apk",
+  "changelog": "• Fondo vuelve al diseño limpio original (se quitó el fondo animado de puntitos)\n• Inputs sin iconos para un look más limpio\n• Placeholder de contraseña a ********",
   "mandatory": false,
   "publishedAt": "2026-10-11"
 }
