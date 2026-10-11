@@ -1,8 +1,8 @@
 {
-  "versionCode": 11,
-  "versionName": "1.0.0-beta11",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta11/UPRProxy-1.0.0-beta11-release.apk",
-  "changelog": "• Nuevo sistema de actualización automática\n• Botón 'Buscar actualizaciones' en el menú dev\n• Aviso automático al abrir si hay versión nueva\n• Chequeo silencioso cada 6 horas",
+  "versionCode": 13,
+  "versionName": "1.0.0-beta13",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta13/UPRProxy-1.0.0-beta13-release.apk",
+  "changelog": "• Flujo de actualización corregido: permiso → descarga → instalación\n• Nuevo diálogo de actualización con changelog y datos de versión\n• Chequeo de actualización al abrir la app\n• Menú dev con todos los botones funcionando",
   "mandatory": false,
   "publishedAt": "2026-10-10"
 }
