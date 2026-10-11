@@ -10,8 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,15 +32,10 @@ public class DevMenuActivity extends AppCompatActivity {
         }
     };
 
-    // Toast persistente que se cancela al mostrar otro (evita el efecto "cola")
-    private Toast currentToast;
-
-    private final Runnable dismissToast = () -> {
-        if (currentToast != null) {
-            currentToast.cancel();
-            currentToast = null;
-        }
-    };
+    // ---------- Estado del flujo de actualización ----------
+    private UpdateInfo pendingUpdate = null;
+    private boolean waitingInstallPermission = false;
+    private boolean hasResumedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,82 +51,105 @@ public class DevMenuActivity extends AppCompatActivity {
         txtDevVersion = findViewById(R.id.txtDevVersion);
         txtDevDevice = findViewById(R.id.txtDevDevice);
 
-        // ---- ACTUALIZACIÓN ----
+        // ACTUALIZACIÓN
         findViewById(R.id.btnCheckUpdates).setOnClickListener(v -> {
-            // Este SÍ usa toast largo (estándar)
+            L.i("DevMenu", "→ Buscar actualizaciones");
             Toast.makeText(this, "Buscando actualizaciones…", Toast.LENGTH_SHORT).show();
             buscarActualizacion(true);
         });
 
-        // ---- DIAGNÓSTICO ----
+        // DIAGNÓSTICO
         findViewById(R.id.btnViewLogs).setOnClickListener(v -> {
-            quickToast("Abriendo logs");
-            startActivity(new Intent(this, LogsActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            L.i("DevMenu", "→ Abrir logs");
+            try {
+                startActivity(new Intent(this, LogsActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            } catch (Exception e) {
+                L.e("DevMenu", "Error abriendo logs", e);
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
 
         findViewById(R.id.btnTestConn).setOnClickListener(v -> {
-            quickToast("Probando…");
+            L.i("DevMenu", "→ Probar conexión");
             probarConexion();
         });
 
         findViewById(R.id.btnSystemInfo).setOnClickListener(v -> {
-            quickToast("Mostrando info");
+            L.i("DevMenu", "→ Info sistema");
             mostrarSystemInfo();
         });
 
-        findViewById(R.id.btnCopyLogs).setOnClickListener(v -> copiarLogs());
+        findViewById(R.id.btnCopyLogs).setOnClickListener(v -> {
+            L.i("DevMenu", "→ Copiar logs");
+            copiarLogs();
+        });
 
-        // ---- VPN ----
-        findViewById(R.id.btnForceReconnect).setOnClickListener(v -> forzarReconexion());
+        // VPN
+        findViewById(R.id.btnForceReconnect).setOnClickListener(v -> {
+            L.i("DevMenu", "→ Forzar reconexión");
+            forzarReconexion();
+        });
 
-        // ---- DATOS ----
+        // DATOS
         findViewById(R.id.btnClearLogs).setOnClickListener(v -> {
             LogBuffer.clear();
-            L.i("DevMenu", "Logs borrados desde menú dev");
-            quickToast("Logs borrados");
+            L.i("DevMenu", "Logs borrados");
+            Toast.makeText(this, "Logs borrados", Toast.LENGTH_SHORT).show();
         });
 
         findViewById(R.id.btnResetOnboarding).setOnClickListener(v -> {
             SecurePrefs.get(this).edit().putBoolean("onboarding_done", false).apply();
-            quickToast("Onboarding se mostrará al abrir");
+            L.i("DevMenu", "Onboarding reactivado");
+            Toast.makeText(this, "Onboarding se mostrará al abrir",
+                    Toast.LENGTH_SHORT).show();
         });
 
-        findViewById(R.id.btnResetPrefs).setOnClickListener(v -> confirmarResetPrefs());
+        findViewById(R.id.btnResetPrefs).setOnClickListener(v -> {
+            L.i("DevMenu", "→ Borrar credenciales");
+            confirmarResetPrefs();
+        });
 
-        // ---- SALIR ----
-        findViewById(R.id.btnExitDev).setOnClickListener(v -> confirmarSalida());
+        // SALIR
+        findViewById(R.id.btnExitDev).setOnClickListener(v -> {
+            L.i("DevMenu", "→ Salir modo dev");
+            confirmarSalida();
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         ui.post(refresher);
+
+        // Si estábamos esperando a que el usuario concediera el permiso de
+        // instalación (volviendo de Ajustes), comprobamos si ya lo concedió.
+        if (hasResumedOnce && waitingInstallPermission && pendingUpdate != null) {
+            boolean granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                    || getPackageManager().canRequestPackageInstalls();
+
+            if (granted) {
+                L.i("DevMenu", "Permiso de instalación concedido, retomando descarga");
+                waitingInstallPermission = false;
+                UpdateInfo info = pendingUpdate;
+                pendingUpdate = null;
+                descargarEInstalar(info);
+            } else {
+                L.w("DevMenu", "Permiso de instalación aún no concedido");
+                waitingInstallPermission = false;
+                pendingUpdate = null;
+                Toast.makeText(this,
+                        "Permiso no concedido. Pulsa otra vez para reintentar.",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+        hasResumedOnce = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         ui.removeCallbacks(refresher);
-    }
-
-    @Override
-    protected void onDestroy() {
-        ui.removeCallbacks(dismissToast);
-        if (currentToast != null) currentToast.cancel();
-        super.onDestroy();
-    }
-
-    // ---------- Toast rápido (cancela el anterior) ----------
-
-    /** Muestra un toast corto cancelando el anterior para que sea instantáneo. */
-    private void quickToast(String msg) {
-        ui.removeCallbacks(dismissToast);
-        if (currentToast != null) currentToast.cancel();
-        currentToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-        currentToast.show();
-        // Cancelarlo a los 900ms para que dure menos que un SHORT normal
-        ui.postDelayed(dismissToast, 900);
     }
 
     // ---------- Estado en vivo ----------
@@ -173,16 +189,38 @@ public class DevMenuActivity extends AppCompatActivity {
             }
             if (hasUpdate && info != null) {
                 UpdateDialog.showAvailable(DevMenuActivity.this, info,
-                        () -> iniciarDescarga(info));
+                        () -> lanzarActualizacion(info));
             } else if (mostrarSiAlDia) {
-                quickToast("✅ Última versión");
+                Toast.makeText(this, "✅ Ya tienes la última versión",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void iniciarDescarga(UpdateInfo info) {
+    /**
+     * Punto de entrada cuando el usuario acepta actualizar.
+     * ORDEN CORRECTO:  permiso → descarga → instalación.
+     */
+    private void lanzarActualizacion(UpdateInfo info) {
+        // 1. Comprobar permiso de instalación ANTES de descargar nada
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!getPackageManager().canRequestPackageInstalls()) {
+                L.i("DevMenu", "Falta permiso de instalación, abriendo Ajustes");
+                pendingUpdate = info;
+                waitingInstallPermission = true;
+                UpdateDialog.showPermissionRequired(this);
+                return;
+            }
+        }
+
+        // 2. Permiso OK → descargar directamente
+        descargarEInstalar(info);
+    }
+
+    private void descargarEInstalar(UpdateInfo info) {
         if (info.apkUrl == null || info.apkUrl.isEmpty()) {
-            quickToast("URL no disponible");
+            Toast.makeText(this, "URL de descarga no disponible",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -198,7 +236,10 @@ public class DevMenuActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(java.io.File apkFile) {
                         try { prog.dismiss(); } catch (Exception ignored) {}
-                        quickToast("Descarga completa");
+                        Toast.makeText(DevMenuActivity.this,
+                                "Descarga completa. Abriendo instalador…",
+                                Toast.LENGTH_SHORT).show();
+                        // Permiso ya garantizado → instalar directamente
                         UpdateDialog.installApk(DevMenuActivity.this, apkFile);
                     }
 
@@ -207,7 +248,8 @@ public class DevMenuActivity extends AppCompatActivity {
                         try { prog.dismiss(); } catch (Exception ignored) {}
                         ErrorDialog.show(DevMenuActivity.this,
                                 "Error al descargar",
-                                message, "Entendido", null, null, null);
+                                "No se pudo descargar el APK:\n\n" + message,
+                                "Entendido", null, null, null);
                     }
                 });
     }
@@ -217,13 +259,15 @@ public class DevMenuActivity extends AppCompatActivity {
     private void copiarLogs() {
         String txt = LogBuffer.fullText();
         if (txt.isEmpty()) {
-            quickToast("No hay logs");
+            Toast.makeText(this, "No hay logs para copiar", Toast.LENGTH_SHORT).show();
             return;
         }
         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (cm != null) {
             cm.setPrimaryClip(ClipData.newPlainText("UPR Proxy logs", txt));
-            quickToast("Logs copiados");
+            Toast.makeText(this, "Logs copiados (" + txt.length() + " caracteres)",
+                    Toast.LENGTH_SHORT).show();
+
             ui.postDelayed(() -> {
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -246,19 +290,22 @@ public class DevMenuActivity extends AppCompatActivity {
         int port;
         try { port = Integer.parseInt(portStr); }
         catch (Exception e) {
-            quickToast("Puerto inválido");
+            Toast.makeText(this, "Puerto inválido guardado", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        Toast.makeText(this, "Probando…", Toast.LENGTH_SHORT).show();
+
         TestConnection.run(host, port, user, pass, (ok, msg) ->
                 ErrorDialog.show(DevMenuActivity.this,
-                        ok ? "✅ Conexión OK" : "❌ Error",
+                        ok ? "✅ Conexión OK" : "❌ Error de conexión",
                         msg, "Entendido", null, null, null));
     }
 
     private void mostrarSystemInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Modelo: ").append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n");
+        sb.append("Modelo: ").append(Build.MANUFACTURER).append(" ")
+                .append(Build.MODEL).append("\n");
         sb.append("Android: ").append(Build.VERSION.RELEASE)
                 .append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
         sb.append("Arquitectura: ");
@@ -282,7 +329,8 @@ public class DevMenuActivity extends AppCompatActivity {
         sb.append("Usuario: ")
                 .append(SecurePrefs.get(this).getString("user", "—"))
                 .append("\n\n");
-        sb.append("VPN: ").append(ProxyStatus.vpnRunning.get() ? "activa" : "inactiva").append("\n");
+        sb.append("VPN: ").append(ProxyStatus.vpnRunning.get() ? "activa" : "inactiva")
+                .append("\n");
         sb.append("Conexiones (sesión): ").append(ProxyStatus.totalConnections.get());
 
         new AlertDialog.Builder(this)
@@ -301,7 +349,7 @@ public class DevMenuActivity extends AppCompatActivity {
                     stop.setAction(ProxyVpnService.ACTION_STOP);
                     startService(stop);
                     L.i("DevMenu", "Forzando reconexión VPN");
-                    quickToast("Reconectando…");
+                    Toast.makeText(this, "Reconectando…", Toast.LENGTH_SHORT).show();
 
                     ui.postDelayed(() -> {
                         SharedPreferences p = SecurePrefs.get(this);
@@ -317,17 +365,22 @@ public class DevMenuActivity extends AppCompatActivity {
                 .show();
     }
 
+    // ---------- Mantenimiento ----------
+
     private void confirmarResetPrefs() {
         new AlertDialog.Builder(this)
                 .setTitle("Borrar credenciales")
                 .setMessage("Se borrarán servidor, puerto, usuario y contraseña.")
                 .setPositiveButton("Borrar", (d, w) -> {
                     SecurePrefs.get(this).edit().clear().apply();
+
                     Intent stop = new Intent(this, ProxyVpnService.class);
                     stop.setAction(ProxyVpnService.ACTION_STOP);
                     startService(stop);
+
                     L.w("DevMenu", "Credenciales borradas");
-                    quickToast("Credenciales borradas");
+                    Toast.makeText(this, "Credenciales borradas",
+                            Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -336,12 +389,13 @@ public class DevMenuActivity extends AppCompatActivity {
     private void confirmarSalida() {
         new AlertDialog.Builder(this)
                 .setTitle("Salir del modo desarrollador")
-                .setMessage("Se desactivará el menú dev.\nPara reactivarlo: 7 toques en la versión.")
+                .setMessage("Se desactivará el menú dev.\n\n"
+                        + "Para reactivarlo: toca 7 veces el texto de la versión.")
                 .setPositiveButton("Salir", (d, w) -> {
                     SecurePrefs.get(this).edit()
                             .putBoolean("developer_mode", false).apply();
                     L.i("DevMenu", "Modo desarrollador desactivado");
-                    quickToast("Modo dev desactivado");
+                    Toast.makeText(this, "Modo dev desactivado", Toast.LENGTH_SHORT).show();
                     ui.postDelayed(() -> {
                         finish();
                         overridePendingTransition(android.R.anim.fade_in,

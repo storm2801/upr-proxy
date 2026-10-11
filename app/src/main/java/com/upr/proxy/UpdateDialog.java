@@ -16,38 +16,99 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 
 /**
- * Diálogos del sistema de actualización:
- *   1. showAvailable() → hay nueva versión → muestra changelog y botón Actualizar
- *   2. showProgress() → descarga con barra de progreso
- *   3. installApk() → abre el instalador de Android con el APK descargado
+ * Diálogos del sistema de actualización.
+ *
+ *  1. showAvailable()          → hay nueva versión (diálogo bonito con changelog)
+ *  2. showPermissionRequired() → falta permiso para instalar APK (abre Ajustes)
+ *  3. showProgress()           → descarga con barra de progreso
+ *  4. updateProgress()         → actualiza la barra
+ *  5. installApk()             → abre el instalador (SOLO cuando ya hay permiso)
  */
 public class UpdateDialog {
 
-    // ---------- 1. Diálogo de versión disponible ----------
+    // ---------- 1. Diálogo de nueva versión disponible ----------
 
     public static void showAvailable(AppCompatActivity ctx, UpdateInfo info,
                                      Runnable onUpdatePressed) {
-        new androidx.appcompat.app.AlertDialog.Builder(ctx)
-                .setTitle("📦 Nueva versión disponible")
+        final Dialog d = new Dialog(ctx);
+        d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        View v = LayoutInflater.from(ctx).inflate(R.layout.dialog_update_available, null);
+        d.setContentView(v);
+
+        if (d.getWindow() != null) {
+            d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(d.getWindow().getAttributes());
+            lp.width = (int) (ctx.getResources().getDisplayMetrics().widthPixels * 0.9);
+            d.getWindow().setAttributes(lp);
+        }
+
+        TextView tvCurrent = v.findViewById(R.id.tvCurrentVersion);
+        TextView tvNew = v.findViewById(R.id.tvNewVersion);
+        TextView tvDate = v.findViewById(R.id.tvPublishDate);
+        TextView tvChangelog = v.findViewById(R.id.tvChangelog);
+        MaterialButton btnNow = v.findViewById(R.id.btnUpdateNow);
+        MaterialButton btnLater = v.findViewById(R.id.btnUpdateLater);
+
+        tvCurrent.setText(getCurrentVersion(ctx));
+        tvNew.setText(info.versionName);
+        tvDate.setText(info.publishedAt == null || info.publishedAt.isEmpty()
+                ? "—" : info.publishedAt);
+        tvChangelog.setText(info.changelog == null || info.changelog.isEmpty()
+                ? "Mejoras de rendimiento y estabilidad."
+                : info.changelog);
+
+        btnNow.setOnClickListener(x -> {
+            d.dismiss();
+            onUpdatePressed.run();
+        });
+        btnLater.setOnClickListener(x -> d.dismiss());
+
+        d.setCancelable(!info.mandatory);
+        d.show();
+    }
+
+    // ---------- 2. Diálogo pidiendo permiso para instalar APKs ----------
+
+    public static void showPermissionRequired(AppCompatActivity ctx) {
+        new AlertDialog.Builder(ctx)
+                .setTitle("Permiso necesario para actualizar")
                 .setMessage(
-                        "Versión instalada: " + getCurrentVersion(ctx) + "\n" +
-                        "Versión nueva: " + info.versionName + "\n" +
-                        "Publicada: " + info.publishedAt + "\n\n" +
-                        "Cambios:\n" + info.changelog
+                    "Para instalar la actualización, primero debes permitir que "
+                    + "UPR Proxy instale apps desconocidas.\n\n"
+                    + "Se abrirá la pantalla de Ajustes. Activa el interruptor y "
+                    + "vuelve a esta app: la descarga empezará automáticamente."
                 )
-                .setPositiveButton("Actualizar", (d, w) -> onUpdatePressed.run())
-                .setNegativeButton("Más tarde", null)
-                .setCancelable(!info.mandatory)
+                .setPositiveButton("Abrir Ajustes", (d, w) -> openInstallSettings(ctx))
+                .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    // ---------- 2. Diálogo de descarga con progreso ----------
+    private static void openInstallSettings(AppCompatActivity ctx) {
+        try {
+            Intent i = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+            i.setData(Uri.parse("package:" + ctx.getPackageName()));
+            ctx.startActivity(i);
+        } catch (Exception e) {
+            // Fallback: abrir la pantalla genérica de seguridad
+            try {
+                ctx.startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS));
+            } catch (Exception e2) {
+                Toast.makeText(ctx, "No se pudo abrir Ajustes", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    // ---------- 3. Diálogo de descarga con progreso ----------
 
     public static Dialog showProgress(AppCompatActivity ctx, String versionName) {
         Dialog d = new Dialog(ctx);
@@ -83,23 +144,17 @@ public class UpdateDialog {
         }
     }
 
-    // ---------- 3. Instalar el APK ----------
+    // ---------- 4. Instalar el APK (permiso ya garantizado) ----------
 
+    /**
+     * Abre el instalador del sistema. Solo debe llamarse DESPUÉS de que
+     * el usuario haya concedido REQUEST_INSTALL_PACKAGES.
+     */
     public static void installApk(AppCompatActivity ctx, File apkFile) {
-        // En Android 8.0+ hay que pedir permiso para instalar apps desconocidas
+        // Doble check defensivo por si acaso
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!ctx.getPackageManager().canRequestPackageInstalls()) {
-                // Abrir los ajustes para conceder el permiso
-                new androidx.appcompat.app.AlertDialog.Builder(ctx)
-                        .setTitle("Permiso necesario")
-                        .setMessage("Para instalar la actualización, permite a UPR Proxy instalar apps desconocidas.")
-                        .setPositiveButton("Abrir ajustes", (d, w) -> {
-                            Intent i = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
-                            i.setData(Uri.parse("package:" + ctx.getPackageName()));
-                            ctx.startActivity(i);
-                        })
-                        .setNegativeButton("Cancelar", null)
-                        .show();
+                showPermissionRequired(ctx);
                 return;
             }
         }
@@ -110,14 +165,14 @@ public class UpdateDialog {
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_ACTIVITY_NEW_TASK);
             ctx.startActivity(intent);
-
-            Toast.makeText(ctx, "Sigue los pasos del instalador", Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
             L.e("UpdateDialog", "Error al abrir el instalador", e);
-            Toast.makeText(ctx, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(ctx, "Error al abrir el instalador: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 

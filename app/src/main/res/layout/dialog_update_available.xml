@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="22dp"
+    android:background="@drawable/dialog_card_bg"
+    android:elevation="8dp">
+
+    <!-- Cabecera -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="18dp">
+
+        <FrameLayout
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/circle_green_bg">
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_update"
+                app:tint="@color/white"
+                android:contentDescription="actualizar"/>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Actualización disponible"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:textColor="@color/upr_green_dark"/>
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mejoras y correcciones"
+                android:textSize="12sp"
+                android:textColor="@color/gray_text"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Caja de versión -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/upr_green_bg"
+        android:padding="14dp"
+        android:layout_marginBottom="14dp"
+        android:backgroundTint="@color/upr_green_bg">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Instalada"
+                android:textSize="11sp"
+                android:textColor="@color/upr_green_soft"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvCurrentVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.0.0-beta11"
+                android:textSize="13sp"
+                android:textColor="@color/upr_green_dark"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nueva"
+                android:textSize="11sp"
+                android:textColor="@color/upr_green_soft"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvNewVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.0.0-beta12"
+                android:textSize="13sp"
+                android:textColor="@color/upr_green_dark"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Publicada"
+                android:textSize="11sp"
+                android:textColor="@color/upr_green_soft"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvPublishDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="—"
+                android:textSize="13sp"
+                android:textColor="@color/upr_green_dark"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Novedades -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NOVEDADES"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="@color/upr_green_soft"
+        android:letterSpacing="0.08"
+        android:layout_marginBottom="6dp"/>
+
+    <TextView
+        android:id="@+id/tvChangelog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="—"
+        android:textSize="13sp"
+        android:textColor="@color/gray_text"
+        android:lineSpacingExtra="3dp"
+        android:maxLines="8"
+        android:ellipsize="end"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Botón actualizar -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUpdateNow"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="Actualizar ahora"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="14dp"
+        android:backgroundTint="@color/upr_green"
+        android:textColor="@color/white"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUpdateLater"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:layout_marginTop="4dp"
+        android:text="Más tarde"
+        android:textSize="13sp"
+        app:cornerRadius="14dp"
+        android:backgroundTint="@android:color/transparent"
+        android:textColor="@color/upr_green_soft"/>
+
+</LinearLayout>
