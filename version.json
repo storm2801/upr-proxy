@@ -2,7 +2,7 @@
   "versionCode": 12,
   "versionName": "1.0.0-beta12",
   "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta12/UPRProxy-1.0.0-beta12-release.apk",
-  "changelog": "• Menú dev arreglado: todos los botones responden al instante\n• Layout reorganizado por secciones (Actualización, Diagnóstico, VPN, Datos)\n• Toasts instantáneos sin cola",
+  "changelog": "Nueva versión 1.0.0-beta12 disponible. Consulta el CHANGELOG para más detalles.",
   "mandatory": false,
-  "publishedAt": "2026-10-10"
+  "publishedAt": "2026-10-11"
 }
