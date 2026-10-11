@@ -2,7 +2,10 @@
   "versionCode": 17,
   "versionName": "1.0.0-beta17",
   "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta17/UPRProxy-1.0.0-beta17-release.apk",
-  "changelog": "• Nuevo: se permiten capturas de pantalla en toda la app\n• Documentación profesional: README bilingüe, arquitectura, guías de instalación y setup\n• Aviso de compatibilidad: solo Android 8.0+ y arquitecturas ARM\n• Guía de desactivación temporal de Play Protect\n• Nuevas guías técnicas: setup, ramas, CI/CD\n• Plantillas de GitHub para PRs e issues\n• Script de limpieza de ramas fusionadas",
+  "changelog": "• Se permiten capturas de pantalla en la app
+• Documentación completa con README bilingüe
+• Aviso de compatibilidad: solo Android 8.0+
+• Guía de desactivación temporal de Play Protect",
   "mandatory": false,
   "publishedAt": "2026-10-11"
 }
