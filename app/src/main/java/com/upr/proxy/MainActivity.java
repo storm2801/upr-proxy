@@ -50,6 +50,28 @@ public class MainActivity extends AppCompatActivity {
     private int tapCount = 0;
     private long firstTapTime = 0;
 
+    // ---------- Estado del flujo de actualización ----------
+    private UpdateInfo pendingUpdate = null;
+    private boolean waitingInstallPermission = false;
+    private boolean hasResumedOnce = false;
+
+    // Toast rápido que se cancela solo para no encolarse
+    private Toast currentToast;
+    private final Runnable dismissToast = () -> {
+        if (currentToast != null) {
+            currentToast.cancel();
+            currentToast = null;
+        }
+    };
+
+    private void quickToast(String msg) {
+        ui.removeCallbacks(dismissToast);
+        if (currentToast != null) currentToast.cancel();
+        currentToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        currentToast.show();
+        ui.postDelayed(dismissToast, 900);
+    }
+
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable refreshRunnable = new Runnable() {
         @Override public void run() {
@@ -80,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
-        // Bloquear screenshots y vista previa en 'Apps recientes'
         getWindow().setFlags(
                 android.view.WindowManager.LayoutParams.FLAG_SECURE,
                 android.view.WindowManager.LayoutParams.FLAG_SECURE);
@@ -124,28 +145,45 @@ public class MainActivity extends AppCompatActivity {
         syncWithService();
         registrarMonitorRed();
 
-        // Chequeo silencioso de actualizaciones (no molesta si no hay novedad)
-        comprobarActualizacionSilenciosa();
+        // Chequeo de actualizaciones al abrir la app
+        comprobarActualizacionAlAbrir();
     }
 
-    private void comprobarActualizacionSilenciosa() {
-        // Frecuencia máxima: 1 vez cada 6 horas
-        long lastCheck = prefs.getLong("last_update_check", 0);
-        long ahora = System.currentTimeMillis();
-        if (ahora - lastCheck < 6L * 60 * 60 * 1000) return;
+    // ---------- Chequeo de actualización al abrir la app ----------
 
-        prefs.edit().putLong("last_update_check", ahora).apply();
-
+    private void comprobarActualizacionAlAbrir() {
         UpdateChecker.check(this, (hasUpdate, info, err) -> {
-            if (hasUpdate && info != null) {
+            // Si no hay error y hay nueva versión → diálogo bonito
+            if (err == null && hasUpdate && info != null) {
                 UpdateDialog.showAvailable(MainActivity.this, info,
-                        () -> descargarDesdeMain(info));
+                        () -> lanzarActualizacion(info));
             }
+            // Si no hay update o hay error → silencio total
         });
     }
 
-    private void descargarDesdeMain(UpdateInfo info) {
-        if (info.apkUrl == null || info.apkUrl.isEmpty()) return;
+    /**
+     * Flujo correcto: permiso → descarga → instalación.
+     */
+    private void lanzarActualizacion(UpdateInfo info) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!getPackageManager().canRequestPackageInstalls()) {
+                L.i("MainActivity", "Falta permiso de instalación, abriendo Ajustes");
+                pendingUpdate = info;
+                waitingInstallPermission = true;
+                UpdateDialog.showPermissionRequired(this);
+                return;
+            }
+        }
+        descargarEInstalar(info);
+    }
+
+    private void descargarEInstalar(UpdateInfo info) {
+        if (info.apkUrl == null || info.apkUrl.isEmpty()) {
+            Toast.makeText(this, "URL de descarga no disponible",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
 
         final android.app.Dialog prog = UpdateDialog.showProgress(this, info.versionName);
 
@@ -172,6 +210,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    // ---------- Ciclo de vida ----------
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -181,10 +221,32 @@ public class MainActivity extends AppCompatActivity {
         } else {
             registerReceiver(stateReceiver, f);
         }
-        // Refrescar texto de versión (por si salimos del modo dev en otra pantalla)
         mostrarVersion();
         syncWithService();
         ui.post(refreshRunnable);
+
+        // Si venimos de conceder el permiso de instalación en Ajustes,
+        // retomamos el flujo de actualización automáticamente.
+        if (hasResumedOnce && waitingInstallPermission && pendingUpdate != null) {
+            boolean granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                    || getPackageManager().canRequestPackageInstalls();
+
+            if (granted) {
+                L.i("MainActivity", "Permiso concedido, retomando descarga");
+                waitingInstallPermission = false;
+                UpdateInfo info = pendingUpdate;
+                pendingUpdate = null;
+                descargarEInstalar(info);
+            } else {
+                L.w("MainActivity", "Permiso aún no concedido");
+                waitingInstallPermission = false;
+                pendingUpdate = null;
+                Toast.makeText(this,
+                        "Permiso no concedido. Puedes intentarlo de nuevo más tarde.",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+        hasResumedOnce = true;
     }
 
     @Override
@@ -208,11 +270,6 @@ public class MainActivity extends AppCompatActivity {
 
     // ---------- Conexión ----------
 
-    /**
-     * Antes de conectar, verificamos que el proxy responde.
-     * Si no responde, NO conectamos para evitar dejar al usuario
-     * sin internet con una VPN activa pero inútil.
-     */
     private void toggleConnection() {
         if (isConnected) {
             desconectar();
@@ -239,7 +296,6 @@ public class MainActivity extends AppCompatActivity {
         btnToggle.setEnabled(false);
         btnToggle.setText("Verificando proxy…");
         if (spinnerToggle != null) spinnerToggle.setVisibility(android.view.View.VISIBLE);
-        // Animación: el botón pulsa mientras verifica
         btnToggle.animate().scaleX(0.97f).scaleY(0.97f).setDuration(120)
                 .withEndAction(() -> btnToggle.animate().scaleX(1f).scaleY(1f)
                         .setDuration(180).start())
@@ -250,7 +306,6 @@ public class MainActivity extends AppCompatActivity {
             btnToggle.setEnabled(true);
             if (spinnerToggle != null) spinnerToggle.setVisibility(android.view.View.GONE);
             if (ok) {
-                // Ahora sí, lanzar la VPN
                 Intent intent = VpnService.prepare(MainActivity.this);
                 if (intent != null) {
                     vpnLauncher.launch(intent);
@@ -309,23 +364,15 @@ public class MainActivity extends AppCompatActivity {
         L.i("MainActivity", "VPN iniciada");
     }
 
-    /**
-     * Envía una acción STOP explícita al servicio en lugar de stopService().
-     * stopService() puede no llamar a onDestroy() a tiempo si el servicio
-     * está ocupado; la acción STOP se procesa en onStartCommand y detiene
-     * todo inmediatamente.
-     */
     private void desconectar() {
         L.i("MainActivity", "Solicitando desconexión");
         Intent i = new Intent(this, ProxyVpnService.class);
         i.setAction(ProxyVpnService.ACTION_STOP);
         startService(i);
 
-        // Optimista: reflejarlo en la UI ya
         isConnected = false;
         actualizarBotonYEstado();
 
-        // Watchdog: si en 3 s sigue activo, usar stopService como plan B
         ui.postDelayed(() -> {
             if (ProxyStatus.vpnRunning.get()) {
                 L.w("MainActivity", "STOP no funcionó, intentando stopService");
@@ -333,8 +380,6 @@ public class MainActivity extends AppCompatActivity {
                 ui.postDelayed(() -> {
                     if (ProxyStatus.vpnRunning.get()) {
                         L.e("MainActivity", "El servicio no se detiene");
-                        // Forzamos la UI a mostrar desconectado aunque el
-                        // sistema mantenga el servicio un rato.
                         ProxyStatus.vpnRunning.set(false);
                         actualizarBotonYEstado();
                         Toast.makeText(MainActivity.this,
@@ -357,7 +402,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void actualizarBotonYEstado() {
-        // Animación de entrada
         btnToggle.animate().scaleX(1.05f).scaleY(1.05f).setDuration(140)
                 .withEndAction(() -> btnToggle.animate().scaleX(1f).scaleY(1f)
                         .setDuration(140).start())
@@ -368,7 +412,6 @@ public class MainActivity extends AppCompatActivity {
             btnToggle.setBackgroundTintList(getColorStateList(R.color.olive_dark));
             txtStatusTitle.setText(R.string.status_connected);
             statusDot.setBackground(dotDrawable(R.drawable.dot_green));
-            // Animación de pulso en el punto verde
             statusDot.animate().scaleX(1.4f).scaleY(1.4f).setDuration(400)
                     .withEndAction(() -> statusDot.animate().scaleX(1f).scaleY(1f)
                             .setDuration(400).start())
@@ -423,7 +466,8 @@ public class MainActivity extends AppCompatActivity {
         String pass = editPassword.getText().toString();
 
         if (host.isEmpty() || portStr.isEmpty()) {
-            Toast.makeText(this, "Rellena servidor y puerto primero", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Rellena servidor y puerto primero",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
         int port;
@@ -455,8 +499,6 @@ public class MainActivity extends AppCompatActivity {
         netCallback = new ConnectivityManager.NetworkCallback() {
             @Override public void onAvailable(Network network) {
                 ui.post(() -> {
-                    // Solo reconectar si el usuario tenía la VPN activa
-                    // y el servicio realmente se cayó.
                     if (isConnected && !ProxyStatus.vpnRunning.get()) {
                         L.i("MainActivity", "Red disponible, reconectando VPN…");
                         startVpnService();
@@ -493,15 +535,9 @@ public class MainActivity extends AppCompatActivity {
             if (tapCount == 0 || (now - firstTapTime) > TAP_TIMEOUT_MS) {
                 tapCount = 1; firstTapTime = now;
             } else { tapCount++; }
-            int restantes = TAPS_TO_ENABLE - tapCount;
-            if (restantes > 0 && restantes <= 3) {
-                Toast.makeText(this, "Faltan " + restantes, Toast.LENGTH_SHORT).show();
-            }
             if (tapCount >= TAPS_TO_ENABLE) {
                 prefs.edit().putBoolean(KEY_DEV_MODE, true).apply();
-                Toast.makeText(this, "🔓 Modo desarrollador activado",
-                        Toast.LENGTH_SHORT).show();
-                // Vibración corta de confirmación
+                quickToast("Modo desarrollador activado");
                 try {
                     android.os.Vibrator vb = (android.os.Vibrator)
                             getSystemService(Context.VIBRATOR_SERVICE);
@@ -514,7 +550,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } catch (Exception ignored) {}
-                // Animación del texto de versión
                 txtVersion.animate().scaleX(1.15f).scaleY(1.15f).setDuration(150)
                         .withEndAction(() -> txtVersion.animate()
                                 .scaleX(1f).scaleY(1f).setDuration(150).start())

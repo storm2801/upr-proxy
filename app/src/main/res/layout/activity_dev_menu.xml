@@ -12,13 +12,13 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header -->
+        <!-- Cabecera -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingBottom="14dp">
+            android:paddingBottom="16dp">
 
             <ImageView
                 android:layout_width="42dp"
@@ -63,7 +63,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ESTADO ACTUAL"
+                    android:textStyle="bold"
+                    android:textSize="10sp"
+                    android:textColor="@color/upr_green_soft"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:id="@+id/txtDevVpnState"
@@ -79,7 +89,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Conexiones: 0"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textColor="@color/gray_text"
                     android:layout_marginTop="4dp"/>
 
@@ -88,7 +98,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Datos: 0 B"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textColor="@color/gray_text"
                     android:layout_marginTop="2dp"/>
 
@@ -97,7 +107,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Versión: —"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textColor="@color/gray_text"
                     android:layout_marginTop="2dp"/>
 
@@ -106,13 +116,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Dispositivo: —"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textColor="@color/gray_text"
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- SECCIÓN: ACTUALIZACIÓN -->
+        <!-- ACTUALIZACIÓN -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -122,7 +132,7 @@
             android:textColor="@color/upr_green_soft"
             android:letterSpacing="0.1"
             android:layout_marginBottom="6dp"
-            android:layout_marginStart="6dp"/>
+            android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCheckUpdates"
@@ -134,9 +144,9 @@
             app:cornerRadius="14dp"
             android:backgroundTint="@color/upr_green"
             android:textColor="@color/white"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="18dp"/>
 
-        <!-- SECCIÓN: DIAGNÓSTICO -->
+        <!-- DIAGNÓSTICO -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -146,61 +156,65 @@
             android:textColor="@color/upr_green_soft"
             android:letterSpacing="0.1"
             android:layout_marginBottom="6dp"
-            android:layout_marginStart="6dp"/>
+            android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewLogs"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Ver logs en vivo"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTestConn"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Probar conexión al proxy"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSystemInfo"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Información del sistema"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCopyLogs"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Copiar todos los logs"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
-            android:layout_marginBottom="16dp"/>
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
+            android:layout_marginBottom="18dp"/>
 
-        <!-- SECCIÓN: VPN -->
+        <!-- VPN -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -210,22 +224,23 @@
             android:textColor="@color/upr_green_soft"
             android:letterSpacing="0.1"
             android:layout_marginBottom="6dp"
-            android:layout_marginStart="6dp"/>
+            android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnForceReconnect"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Forzar reconexión"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
-            android:layout_marginBottom="16dp"/>
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
+            android:layout_marginBottom="18dp"/>
 
-        <!-- SECCIÓN: DATOS -->
+        <!-- DATOS -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -235,46 +250,49 @@
             android:textColor="@color/upr_green_soft"
             android:letterSpacing="0.1"
             android:layout_marginBottom="6dp"
-            android:layout_marginStart="6dp"/>
+            android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearLogs"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Borrar logs"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnResetOnboarding"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Volver a mostrar onboarding"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="@color/upr_green_dark"
             app:strokeColor="@color/upr_green"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnResetPrefs"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="Borrar credenciales guardadas"
             android:textSize="13sp"
+            android:textStyle="bold"
             app:cornerRadius="14dp"
-            android:textColor="#D32F2F"
             app:strokeColor="#D32F2F"
-            app:strokeWidth="1.5dp"
-            android:layout_marginBottom="20dp"/>
+            app:strokeWidth="2dp"
+            android:backgroundTint="@color/white"
+            android:textColor="#D32F2F"
+            android:layout_marginBottom="22dp"/>
 
         <!-- Salir -->
         <com.google.android.material.button.MaterialButton

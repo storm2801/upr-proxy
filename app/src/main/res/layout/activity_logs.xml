@@ -54,22 +54,6 @@
             android:paddingLeft="12dp"
             android:paddingRight="12dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExitDev"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:layout_marginStart="6dp"
-            android:text="Salir"
-            android:textSize="11sp"
-            app:cornerRadius="19dp"
-            android:backgroundTint="#B71C1C"
-            android:textColor="@color/white"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minWidth="0dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"/>
-
     </LinearLayout>
 
     <!-- Chips de filtro por nivel -->
