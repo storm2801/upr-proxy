@@ -40,9 +40,7 @@ public class LogsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(
-                android.view.WindowManager.LayoutParams.FLAG_SECURE,
-                android.view.WindowManager.LayoutParams.FLAG_SECURE);
+        // FLAG_SECURE eliminado: se permiten capturas de pantalla
         setContentView(R.layout.activity_logs);
 
         recycler = findViewById(R.id.recyclerLogs);

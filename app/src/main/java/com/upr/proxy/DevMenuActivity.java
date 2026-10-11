@@ -56,9 +56,7 @@ public class DevMenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(
-                android.view.WindowManager.LayoutParams.FLAG_SECURE,
-                android.view.WindowManager.LayoutParams.FLAG_SECURE);
+        // FLAG_SECURE eliminado: se permiten capturas de pantalla
         setContentView(R.layout.activity_dev_menu);
 
         txtDevVpnState = findViewById(R.id.txtDevVpnState);

@@ -102,9 +102,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(
-                android.view.WindowManager.LayoutParams.FLAG_SECURE,
-                android.view.WindowManager.LayoutParams.FLAG_SECURE);
+        // FLAG_SECURE eliminado: se permiten capturas de pantalla
         setContentView(R.layout.activity_main);
 
         editServer = findViewById(R.id.editServer);
