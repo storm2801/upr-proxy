@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/gray_light"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
+
+    <!-- Fondo animado de puntitos -->
+    <com.upr.proxy.DotFieldView
+        android:id="@+id/dotField"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- Velo blanco superior para legibilidad del header -->
+    <View
+        android:id="@+id/topVeil"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="@drawable/top_veil_gradient"
+        android:clickable="false"
+        android:focusable="false"/>
+
+    <!-- Contenido scrollable sobre el fondo -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,7 +70,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="18dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/card_crystal"
             app:strokeColor="@color/upr_green_bg"
             app:strokeWidth="1dp">
 
@@ -75,8 +95,6 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/server_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:startIconDrawable="@drawable/ic_server"
-                    app:startIconTint="@color/upr_green_medium"
                     app:boxStrokeColor="@color/upr_green"
                     app:hintTextColor="@color/upr_green_medium"
                     app:boxStrokeWidth="2dp"
@@ -107,8 +125,6 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/port_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:startIconDrawable="@drawable/ic_port"
-                    app:startIconTint="@color/upr_green_medium"
                     app:boxStrokeColor="@color/upr_green"
                     app:hintTextColor="@color/upr_green_medium"
                     app:boxStrokeWidth="2dp"
@@ -139,8 +155,6 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/user_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:startIconDrawable="@drawable/ic_person"
-                    app:startIconTint="@color/upr_green_medium"
                     app:boxStrokeColor="@color/upr_green"
                     app:hintTextColor="@color/upr_green_medium"
                     app:boxStrokeWidth="2dp"
@@ -171,8 +185,6 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/password_label"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:startIconDrawable="@drawable/ic_lock"
-                    app:startIconTint="@color/upr_green_medium"
                     app:endIconMode="password_toggle"
                     app:endIconTint="@color/upr_green_medium"
                     app:boxStrokeColor="@color/upr_green"
@@ -252,7 +264,7 @@
             android:layout_marginTop="18dp"
             app:cardCornerRadius="18dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/card_crystal"
             app:strokeColor="@color/upr_green_bg"
             app:strokeWidth="1dp">
 
@@ -445,3 +457,4 @@
 
     </LinearLayout>
 </ScrollView>
+</FrameLayout>

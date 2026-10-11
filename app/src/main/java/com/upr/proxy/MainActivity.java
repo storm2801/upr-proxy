@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtStatusTitle, txtStatusServer, txtStatusConnections,
                      txtStatusBytes, txtStatusSpeed, txtStatusUptime, txtVersion;
     private android.view.View statusDot;
+    private DotFieldView dotField;
 
     private SharedPreferences prefs;
     private boolean isConnected = false;
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         txtStatusUptime = findViewById(R.id.txtStatusUptime);
         txtVersion = findViewById(R.id.txtVersion);
         statusDot = findViewById(R.id.statusDot);
+        dotField = findViewById(R.id.dotField);
 
         prefs = SecurePrefs.get(this);
         SecurePrefs.migrateIfNeeded(this);
@@ -225,6 +227,8 @@ public class MainActivity extends AppCompatActivity {
         syncWithService();
         ui.post(refreshRunnable);
 
+        if (dotField != null) dotField.start();
+
         // Si venimos de conceder el permiso de instalación en Ajustes,
         // retomamos el flujo de actualización automáticamente.
         if (hasResumedOnce && waitingInstallPermission && pendingUpdate != null) {
@@ -254,6 +258,8 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         try { unregisterReceiver(stateReceiver); } catch (Exception ignored) {}
         ui.removeCallbacks(refreshRunnable);
+
+        if (dotField != null) dotField.stop();
     }
 
     @Override
