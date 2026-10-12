@@ -4,7 +4,11 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
@@ -14,6 +18,9 @@ import android.os.ParcelFileDescriptor;
 import androidx.core.app.NotificationCompat;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProxyVpnService extends VpnService {
 
@@ -68,6 +75,49 @@ public class ProxyVpnService extends VpnService {
             builder.setSession("UPR Proxy");
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
+
+            // ⭐ NUEVO: leer los DNS del sistema y añadirlos al túnel
+            List<InetAddress> dnsList = new ArrayList<>();
+            try {
+                ConnectivityManager cm = (ConnectivityManager)
+                        getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (cm != null) {
+                    Network active = cm.getActiveNetwork();
+                    LinkProperties lp = cm.getLinkProperties(active);
+                    if (lp != null) {
+                        dnsList.addAll(lp.getDnsServers());
+                        L.i(TAG, "DNS del sistema: " + dnsList);
+                    }
+                }
+            } catch (Exception e) {
+                L.w(TAG, "No se pudo leer DNS del sistema: " + e.getMessage());
+            }
+
+            // Fallback si no hay DNS
+            if (dnsList.isEmpty()) {
+                try {
+                    dnsList.add(InetAddress.getByName("10.2.0.1"));
+                    dnsList.add(InetAddress.getByName("8.8.8.8"));
+                    L.i(TAG, "DNS fallback: " + dnsList);
+                } catch (Exception ignored) {}
+            }
+
+            for (InetAddress dns : dnsList) {
+                builder.addDnsServer(dns);
+
+                // ⭐ Android 13+: excluir el DNS del túnel para que las consultas
+                //    no se pierdan por el proxy HTTP (que solo hace TCP).
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    try {
+                        int prefixLen = dns instanceof java.net.Inet6Address ? 128 : 32;
+                        builder.excludeRoute(new android.net.IpPrefix(dns, prefixLen));
+                        L.i(TAG, "DNS excluido del túnel: " + dns);
+                    } catch (Exception e) {
+                        L.w(TAG, "No se pudo excluir DNS del túnel: " + e.getMessage());
+                    }
+                }
+            }
+
             try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
 
             vpnInterface = builder.establish();
