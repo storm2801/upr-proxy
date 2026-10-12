@@ -1,11 +1,8 @@
 {
-  "versionCode": 17,
-  "versionName": "1.0.0-beta17",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta17/UPRProxy-1.0.0-beta17-release.apk",
-  "changelog": "• Se permiten capturas de pantalla en la app
-• Documentación completa con README bilingüe
-• Aviso de compatibilidad: solo Android 8.0+
-• Guía de desactivación temporal de Play Protect",
+  "versionCode": 18,
+  "versionName": "1.0.0-beta18",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta18/UPRProxy-1.0.0-beta18-release.apk",
+  "changelog": "• Arreglado: DNS del sistema ahora se lee y se pasa a la VPN\n• Arreglado: IPv6 ignorado (evita fallos en algunos móviles)\n• Nuevo: sistema de 3 estrategias de VPN según la marca del móvil\n• Compatibilidad ampliada: Samsung, Xiaomi, Huawei, Pixel, Motorola",
   "mandatory": false,
-  "publishedAt": "2026-10-11"
+  "publishedAt": "2026-10-12"
 }

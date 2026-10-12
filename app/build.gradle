@@ -16,8 +16,8 @@ android {
         applicationId "com.upr.proxy"
         minSdk 26
         targetSdk 34
-        versionCode 17
-        versionName "1.0.0-beta17"
+        versionCode 18
+        versionName "1.0.0-beta18"
 
         // Solo incluir las arquitecturas ARM (99% de los móviles modernos)
         ndk {

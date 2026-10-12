@@ -5,6 +5,22 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta18] — 2026-10-12
+
+### Arreglado
+- **DNS del sistema dentro del túnel VPN**: antes las consultas DNS se
+  perdían porque el proxy HTTP solo maneja TCP. Ahora la app lee los DNS
+  del WiFi con ConnectivityManager y los añade al Builder de la VPN.
+- **DNS IPv6 ignorado**: algunos WiFi tienen DNS IPv6 que rompían
+  establish() en móviles Samsung. Ahora solo se procesan DNS IPv4.
+- **Compatibility con marcas**: sistema de 3 estrategias en cascada.
+  La app intenta automáticamente la mejor configuración según el móvil.
+
+### Añadido
+- scripts/build.sh: compilación en CachyOS/Arch sin credenciales.
+
+---
+
 ## [Unreleased]
 
 ---
