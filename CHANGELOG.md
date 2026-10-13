@@ -5,6 +5,27 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta19] — 2026-10-12
+
+### Arreglado
+- **Crash al forzar reconexión**: eliminado excludeRoute() que colgaba
+  el hilo principal en Samsung y provocaba ANR.
+- **Permiso VPN**: Forzar reconexión ahora pide permiso al sistema si
+  no se ha concedido.
+- **DNS**: se resuelve FUERA del túnel (Android usa los DNS del WiFi
+  cuando el Builder no los declara). Evita que las consultas UDP se
+  pierdan en el proxy HTTP.
+- **Doble proxy**: la app avisa si el WiFi tiene un proxy configurado
+  y ofrece abrir los ajustes de WiFi para quitarlo.
+
+### Añadido
+- Permiso de notificaciones en Android 13+ (POST_NOTIFICATIONS).
+
+### Simplificado
+- Una sola configuración de VPN (sin sistema de estrategias).
+
+---
+
 ## [1.0.0-beta18] — 2026-10-12
 
 ### Arreglado

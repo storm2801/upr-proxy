@@ -13,6 +13,9 @@ import android.os.Looper;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.net.VpnService;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -23,6 +26,21 @@ public class DevMenuActivity extends AppCompatActivity {
 
     private TextView txtDevVpnState, txtDevConns, txtDevBytes,
                      txtDevVersion, txtDevDevice;
+
+    private UpdateInfo pendingUpdateForVpn = null;
+
+    private final ActivityResultLauncher<Intent> vpnPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) {
+                            L.i("DevMenu", "Permiso VPN concedido, arrancando…");
+                            arrancarVpnAhora();
+                        } else {
+                            L.w("DevMenu", "Permiso VPN denegado");
+                            quickToast("Permiso VPN denegado");
+                        }
+                    });
 
     private Toast currentToast;
     private final Runnable dismissToast = () -> {
@@ -365,24 +383,39 @@ public class DevMenuActivity extends AppCompatActivity {
                 .setTitle("Forzar reconexión")
                 .setMessage("¿Detener y volver a iniciar la VPN?")
                 .setPositiveButton("Reconectar", (d, w) -> {
+                    // 1. Detener servicio actual
                     Intent stop = new Intent(this, ProxyVpnService.class);
                     stop.setAction(ProxyVpnService.ACTION_STOP);
                     startService(stop);
                     L.i("DevMenu", "Forzando reconexión VPN");
                     quickToast("Reconectando…");
 
+                    // 2. Esperar 2s, luego pedir permiso VPN si hace falta
                     ui.postDelayed(() -> {
-                        SharedPreferences p = SecurePrefs.get(this);
-                        Intent start = new Intent(this, ProxyVpnService.class);
-                        start.putExtra("server", p.getString("server", "proxy.upr.edu.cu"));
-                        start.putExtra("port", p.getString("port", "8080"));
-                        start.putExtra("user", p.getString("user", ""));
-                        start.putExtra("password", p.getString("password", ""));
-                        ContextCompat.startForegroundService(this, start);
+                        Intent prepare = VpnService.prepare(this);
+                        if (prepare != null) {
+                            L.i("DevMenu", "Solicitando permiso VPN al sistema…");
+                            vpnPermissionLauncher.launch(prepare);
+                        } else {
+                            // Ya tiene permiso
+                            L.i("DevMenu", "Permiso VPN ya concedido, arrancando…");
+                            arrancarVpnAhora();
+                        }
                     }, 2000);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
+    }
+
+    private void arrancarVpnAhora() {
+        SharedPreferences p = SecurePrefs.get(this);
+        Intent start = new Intent(this, ProxyVpnService.class);
+        start.putExtra("server", p.getString("server", "proxy.upr.edu.cu"));
+        start.putExtra("port", p.getString("port", "8080"));
+        start.putExtra("user", p.getString("user", ""));
+        start.putExtra("password", p.getString("password", ""));
+        ContextCompat.startForegroundService(this, start);
+        quickToast("VPN arrancando…");
     }
 
     // ---------- Mantenimiento ----------
