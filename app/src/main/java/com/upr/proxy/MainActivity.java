@@ -12,6 +12,9 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.VpnService;
+import android.net.Uri;
+import android.provider.Settings;
+import android.net.LinkProperties;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
 
     private ConnectivityManager.NetworkCallback netCallback;
 
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                L.i("MainActivity", "Permiso notificaciones: " + granted);
+            });
+
     private final ActivityResultLauncher<Intent> vpnLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
@@ -143,8 +151,44 @@ public class MainActivity extends AppCompatActivity {
         syncWithService();
         registrarMonitorRed();
 
+        // Pedir permiso de notificaciones (Android 13+)
+        pedirPermisoNotificaciones();
+
         // Chequeo de actualizaciones al abrir la app
         comprobarActualizacionAlAbrir();
+    }
+
+    // ---------- Permisos ----------
+
+    private void pedirPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(
+                        android.Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    /**
+     * Verifica si el WiFi actual tiene un proxy HTTP configurado.
+     * Si lo tiene, activar la VPN crea un "doble proxy" que rompe todo.
+     * @return true si hay proxy configurado en el WiFi.
+     */
+    private boolean wifiTieneProxyConfigurado() {
+        try {
+            ConnectivityManager cm = (ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return false;
+            Network active = cm.getActiveNetwork();
+            if (active == null) return false;
+            LinkProperties lp = cm.getLinkProperties(active);
+            if (lp == null) return false;
+            return lp.getHttpProxy() != null;
+        } catch (Exception e) {
+            L.w("MainActivity", "Error comprobando proxy WiFi: " + e.getMessage());
+            return false;
+        }
     }
 
     // ---------- Chequeo de actualización al abrir la app ----------
@@ -290,6 +334,30 @@ public class MainActivity extends AppCompatActivity {
         try { port = Integer.parseInt(portStr); }
         catch (Exception e) {
             Toast.makeText(this, "Puerto inválido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Verificar si el WiFi ya tiene proxy configurado (doble proxy rompe la app)
+        if (wifiTieneProxyConfigurado()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Quita el proxy del WiFi")
+                    .setMessage(
+                        "Este WiFi tiene un proxy configurado manualmente.\n\n"
+                        + "UPR Proxy necesita que el WiFi use conexión normal "
+                        + "para enrutar el tráfico por su propia VPN.\n\n"
+                        + "Ve a:\n"
+                        + "  Ajustes → WiFi → UPR-WIFI → Proxy → Ninguno\n\n"
+                        + "Luego vuelve a pulsar Conectar."
+                    )
+                    .setPositiveButton("Abrir Ajustes WiFi", (d, w) -> {
+                        try {
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                        } catch (Exception ignored) {
+                            startActivity(new Intent(Settings.ACTION_SETTINGS));
+                        }
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .show();
             return;
         }
 

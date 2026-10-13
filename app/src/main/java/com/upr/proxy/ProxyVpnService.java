@@ -69,158 +69,52 @@ public class ProxyVpnService extends VpnService {
     }
 
     private void startVpn() {
-        if (vpnInterface != null || stopping) return;
+        if (vpnInterface != null) return;
+        stopping = false;
 
-        L.i(TAG, "Iniciando VPN con detección de compatibilidad…");
-
-        // Leer DNS del sistema una sola vez
-        List<InetAddress> dnsList = new ArrayList<>();
         try {
-            ConnectivityManager cm = (ConnectivityManager)
-                    getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm != null) {
-                Network active = cm.getActiveNetwork();
-                LinkProperties lp = cm.getLinkProperties(active);
-                if (lp != null) {
-                    dnsList.addAll(lp.getDnsServers());
-                    L.i(TAG, "DNS del sistema: " + dnsList);
-                }
+            Builder builder = new Builder();
+            builder.setSession("UPR Proxy");
+            builder.addAddress("10.0.0.2", 32);
+            builder.addRoute("0.0.0.0", 0);
+
+            // NOTA IMPORTANTE:
+            // NO añadimos addDnsServer() al Builder. Android, cuando no
+            // encuentra DNS configurados en el túnel, resuelve los dominios
+            // con los DNS del WiFi FUERA del túnel. Esto es lo que queremos:
+            // solo el tráfico IP real pasa por el proxy, el DNS se resuelve
+            // localmente por el WiFi. Evita completamente el problema de
+            // "UDP DNS atrapado en túnel TCP" y no requiere excludeRoute
+            // (que colgaba en Samsung).
+
+            try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
+
+            vpnInterface = builder.establish();
+
+            if (vpnInterface == null) {
+                L.e(TAG, "establish() devolvió null — la VPN no pudo crearse");
+                detenerTodo();
+                return;
             }
-        } catch (Exception e) {
-            L.w(TAG, "No se pudo leer DNS del sistema: " + e.getMessage());
-        }
 
-        // Filtrar solo IPv4 (la VPN solo declara IPv4)
-        List<InetAddress> ipv4Dns = new ArrayList<>();
-        for (InetAddress dns : dnsList) {
-            if (dns instanceof java.net.Inet4Address) {
-                ipv4Dns.add(dns);
-            } else {
-                L.i(TAG, "DNS IPv6 ignorado: " + dns);
-            }
-        }
+            L.i(TAG, "✅ VPN establecida");
 
-        // Fallbacks si no hay IPv4
-        if (ipv4Dns.isEmpty()) {
-            try {
-                ipv4Dns.add(InetAddress.getByName("10.2.0.1"));
-                ipv4Dns.add(InetAddress.getByName("8.8.8.8"));
-                L.i(TAG, "DNS fallback IPv4: " + ipv4Dns);
-            } catch (Exception ignored) {}
-        }
+            forwarder = new ProxyForwarder(getApplicationContext(), vpnInterface,
+                    proxyServer, proxyPort, proxyUser, proxyPassword);
+            vpnThread = new Thread(forwarder, "upr-proxy-forwarder");
+            vpnThread.start();
 
-        // Sistema de intentos en cascada para máxima compatibilidad
-        vpnInterface = tryEstablishStrategyA(ipv4Dns);
-        if (vpnInterface == null) {
-            L.w(TAG, "Estrategia A (excludeRoute) falló, probando B…");
-            vpnInterface = tryEstablishStrategyB(ipv4Dns);
-        }
-        if (vpnInterface == null) {
-            L.w(TAG, "Estrategia B (addDnsServer) falló, probando C…");
-            vpnInterface = tryEstablishStrategyC();
-        }
+            ProxyStatus.vpnRunning.set(true);
+            ProxyStatus.serverHost = proxyServer;
+            try { ProxyStatus.serverPort = Integer.parseInt(proxyPort); } catch (Exception ignored) {}
+            ProxyStatus.startedAt = System.currentTimeMillis();
 
-        if (vpnInterface == null) {
-            L.e(TAG, "Todas las estrategias fallaron. La VPN no puede establecerse.");
+            broadcastState();
+            L.i(TAG, "VPN activa → " + proxyServer + ":" + proxyPort);
+
+        } catch (Throwable t) {
+            L.e(TAG, "Error al iniciar VPN: " + t.getMessage());
             detenerTodo();
-            return;
-        }
-
-        forwarder = new ProxyForwarder(getApplicationContext(), vpnInterface,
-                proxyServer, proxyPort, proxyUser, proxyPassword);
-        vpnThread = new Thread(forwarder, "upr-proxy-forwarder");
-        vpnThread.start();
-
-        ProxyStatus.vpnRunning.set(true);
-        ProxyStatus.serverHost = proxyServer;
-        try { ProxyStatus.serverPort = Integer.parseInt(proxyPort); } catch (Exception ignored) {}
-        ProxyStatus.startedAt = System.currentTimeMillis();
-
-        broadcastState();
-        L.i(TAG, "VPN activa → " + proxyServer + ":" + proxyPort);
-    }
-
-    /**
-     * Estrategia A: DNS + excludeRoute (óptima en stock Android, Pixel).
-     * Excluye las consultas DNS del túnel para que vayan directas por WiFi.
-     */
-    private ParcelFileDescriptor tryEstablishStrategyA(List<InetAddress> dnsList) {
-        try {
-            Builder builder = new Builder();
-            builder.setSession("UPR Proxy");
-            builder.addAddress("10.0.0.2", 32);
-            builder.addRoute("0.0.0.0", 0);
-
-            for (InetAddress dns : dnsList) {
-                builder.addDnsServer(dns);
-                try {
-                    builder.excludeRoute(new android.net.IpPrefix(dns, 32));
-                } catch (Exception e) {
-                    L.w(TAG, "[A] excludeRoute(" + dns + ") falló: " + e.getMessage());
-                }
-            }
-
-            try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
-
-            ParcelFileDescriptor pfd = builder.establish();
-            if (pfd != null) {
-                L.i(TAG, "[A] ✅ VPN establecida con excludeRoute");
-            }
-            return pfd;
-        } catch (Exception e) {
-            L.w(TAG, "[A] Exception: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Estrategia B: DNS sin excludeRoute (compatible con Samsung, Xiaomi).
-     * DNS va por el túnel pero el usuario puede al menos conectarse.
-     */
-    private ParcelFileDescriptor tryEstablishStrategyB(List<InetAddress> dnsList) {
-        try {
-            Builder builder = new Builder();
-            builder.setSession("UPR Proxy");
-            builder.addAddress("10.0.0.2", 32);
-            builder.addRoute("0.0.0.0", 0);
-
-            for (InetAddress dns : dnsList) {
-                builder.addDnsServer(dns);
-            }
-
-            try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
-
-            ParcelFileDescriptor pfd = builder.establish();
-            if (pfd != null) {
-                L.i(TAG, "[B] ✅ VPN establecida sin excludeRoute");
-            }
-            return pfd;
-        } catch (Exception e) {
-            L.w(TAG, "[B] Exception: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Estrategia C: VPN básica sin DNS ni rutas especiales (último recurso).
-     * Compatible con cualquier Android, aunque el DNS puede no resolverse.
-     */
-    private ParcelFileDescriptor tryEstablishStrategyC() {
-        try {
-            Builder builder = new Builder();
-            builder.setSession("UPR Proxy");
-            builder.addAddress("10.0.0.2", 32);
-            builder.addRoute("0.0.0.0", 0);
-            try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
-
-            ParcelFileDescriptor pfd = builder.establish();
-            if (pfd != null) {
-                L.i(TAG, "[C] ✅ VPN establecida en modo básico");
-            }
-            return pfd;
-        } catch (Exception e) {
-            L.w(TAG, "[C] Exception: " + e.getMessage());
-            return null;
         }
     }
 

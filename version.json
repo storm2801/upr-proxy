@@ -1,8 +1,8 @@
 {
-  "versionCode": 18,
-  "versionName": "1.0.0-beta18",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta18/UPRProxy-1.0.0-beta18-release.apk",
-  "changelog": "• Arreglado: DNS del sistema ahora se lee y se pasa a la VPN\n• Arreglado: IPv6 ignorado (evita fallos en algunos móviles)\n• Nuevo: sistema de 3 estrategias de VPN según la marca del móvil\n• Compatibilidad ampliada: Samsung, Xiaomi, Huawei, Pixel, Motorola",
+  "versionCode": 19,
+  "versionName": "1.0.0-beta19",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta19/UPRProxy-1.0.0-beta19-release.apk",
+  "changelog": "• Arreglado: la app ya no crashea al forzar reconexión\n• Arreglado: pide permiso de VPN correctamente tras reinstalar\n• Arreglado: el DNS se resuelve fuera del túnel (más compatible)\n• Nuevo: aviso si el WiFi tiene un proxy configurado (doble proxy)\n• Nuevo: permiso de notificaciones en Android 13+",
   "mandatory": false,
   "publishedAt": "2026-10-12"
 }
