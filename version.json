@@ -1,15 +1,8 @@
 {
-<<<<<<< HEAD
-  "versionCode": 18,
-  "versionName": "1.0.0-beta18",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta18/UPRProxy-1.0.0-beta18-release.apk",
-  "changelog": "Nueva versión 1.0.0-beta18 disponible. Consulta el CHANGELOG para más detalles.",
-=======
   "versionCode": 19,
   "versionName": "1.0.0-beta19",
   "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta19/UPRProxy-1.0.0-beta19-release.apk",
-  "changelog": "• Arreglado: la app ya no crashea al forzar reconexión\n• Arreglado: pide permiso de VPN correctamente tras reinstalar\n• Arreglado: el DNS se resuelve fuera del túnel (más compatible)\n• Nuevo: aviso si el WiFi tiene un proxy configurado (doble proxy)\n• Nuevo: permiso de notificaciones en Android 13+",
->>>>>>> develop
+  "changelog": "Nueva versión 1.0.0-beta19 disponible. Consulta el CHANGELOG para más detalles.",
   "mandatory": false,
-  "publishedAt": "2026-10-12"
+  "publishedAt": "2026-10-13"
 }
