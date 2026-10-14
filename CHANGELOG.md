@@ -5,6 +5,28 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta26] — 2026-10-15
+
+### Añadido
+- **Reporte de diagnóstico completo** en el menú dev. Genera un archivo
+  .txt con:
+  * Info completa del dispositivo (fabricante, modelo, API, arquitecturas)
+  * Memoria RAM y almacenamiento
+  * Resolución de pantalla
+  * Info de la app (versión, package, firma SHA-256, tamaño)
+  * Configuración guardada (sin contraseña)
+  * Estado de la VPN (uptime, conexiones, bytes)
+  * Estado de la red (SSID, IP, DNS, proxy del WiFi)
+  * Últimos 300 logs
+  Compartible por WhatsApp, email, etc.
+
+### Eliminado
+- Botón 'Información del sistema' (ahora está en el reporte)
+- Botón 'Copiar todos los logs' (el reporte los incluye)
+- Botón 'Borrar logs' (poco útil)
+
+---
+
 ## [1.0.0-beta25] — 2026-10-14
 
 ### Añadido — Bloque 1 completo
