@@ -1,8 +1,8 @@
 {
-  "versionCode": 21,
-  "versionName": "1.0.0-beta21",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta21/UPRProxy-1.0.0-beta21-release.apk",
-  "changelog": "• Arreglado el bug crítico de pipes bidireccionales (respuesta del proxy no llegaba al móvil)\n• MTU reducido de 8500 a 1400\n• DNS de la UPR configurados en el túnel",
+  "versionCode": 23,
+  "versionName": "1.0.0-beta23",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta23/UPRProxy-1.0.0-beta23-release.apk",
+  "changelog": "• Beta23: URL de actualización corregida (github.com en vez de raw.githubusercontent.com)\n• A partir de esta versión las actualizaciones automáticas funcionan",
   "mandatory": false,
   "publishedAt": "2026-10-14"
 }
