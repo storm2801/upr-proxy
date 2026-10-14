@@ -5,6 +5,25 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta25] — 2026-10-14
+
+### Añadido — Bloque 1 completo
+- **UprLoginActivity**: WebView con autofill del portal cautivo de la UPR
+  (upr-wifi.upr.edu.cu:8003). Rellena usuario y contraseña automáticamente
+  y detecta cuando el login es exitoso.
+- **VpnTileService**: Quick Settings Tile para conectar/desconectar la
+  VPN desde el panel de notificaciones rápidas sin abrir la app.
+- **Botón 'Configurar WiFi (proxy)'** en la pantalla principal que abre
+  los ajustes de WiFi directamente.
+- **Botón 'Abrir intranet UPR'** ahora abre el WebView embebido con
+  autofill en vez de Chrome.
+
+### Cambiado
+- network_security_config: dominios upr-wifi.upr.edu.cu e
+  intranet.upr.edu.cu permitidos para cleartext.
+
+---
+
 ## [1.0.0-beta24] — 2026-10-14
 
 ### Añadido

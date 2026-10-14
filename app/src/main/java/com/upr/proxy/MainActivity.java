@@ -148,8 +148,17 @@ public class MainActivity extends AppCompatActivity {
         btnToggle.setOnClickListener(v -> toggleConnection());
         btnTest.setOnClickListener(v -> probarConexion());
 
-        // Abrir intranet UPR en el navegador
-        findViewById(R.id.btnOpenIntranet).setOnClickListener(v -> abrirIntranet());
+        // Abrir intranet UPR con autofill embebido
+        findViewById(R.id.btnOpenIntranet).setOnClickListener(v -> abrirLoginUPR());
+
+        // Abrir ajustes de WiFi para configurar proxy
+        findViewById(R.id.btnWifiSettings).setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+            } catch (Exception e) {
+                Toast.makeText(this, "No se pudo abrir ajustes WiFi", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         syncWithService();
         registrarMonitorRed();
@@ -505,18 +514,10 @@ public class MainActivity extends AppCompatActivity {
 
     // ---------- Intranet UPR ----------
 
-    private void abrirIntranet() {
-        try {
-            Intent i = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("https://intranet.upr.edu.cu"));
-            startActivity(i);
-            L.i("MainActivity", "Abriendo intranet UPR en el navegador");
-        } catch (Exception e) {
-            L.e("MainActivity", "Error abriendo intranet", e);
-            Toast.makeText(this,
-                    "No se pudo abrir el navegador: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
-        }
+    private void abrirLoginUPR() {
+        L.i("MainActivity", "Abriendo login UPR embebido");
+        startActivity(new Intent(this, UprLoginActivity.class));
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     // ---------- Probar ----------
