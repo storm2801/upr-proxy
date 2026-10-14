@@ -2,7 +2,7 @@
   "versionCode": 23,
   "versionName": "1.0.0-beta23",
   "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta23/UPRProxy-1.0.0-beta23-release.apk",
-  "changelog": "• Beta23: URL de actualización corregida (github.com en vez de raw.githubusercontent.com)\n• A partir de esta versión las actualizaciones automáticas funcionan",
+  "changelog": "Nueva versión 1.0.0-beta23 disponible. Consulta el CHANGELOG para más detalles.",
   "mandatory": false,
   "publishedAt": "2026-10-14"
 }
