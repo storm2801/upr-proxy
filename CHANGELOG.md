@@ -5,6 +5,20 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta23] — 2026-10-14
+
+### Arreglado
+- **URL de version.json cambiada a github.com**. El proxy de la UPR
+  bloqueaba raw.githubusercontent.com, así que la app nunca podía
+  consultar si había actualización. A partir de esta versión, las
+  actualizaciones automáticas funcionan.
+
+### Notas
+- Beta22 se subió por error con el nombre del APK equivocado. Se
+  salta directamente a beta23.
+
+---
+
 ## [1.0.0-beta21] — 2026-10-14
 
 ### Arreglado
