@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity {
         btnToggle.setOnClickListener(v -> toggleConnection());
         btnTest.setOnClickListener(v -> probarConexion());
 
+        // Abrir intranet UPR en el navegador
+        findViewById(R.id.btnOpenIntranet).setOnClickListener(v -> abrirIntranet());
+
         syncWithService();
         registrarMonitorRed();
 
@@ -498,6 +501,22 @@ public class MainActivity extends AppCompatActivity {
         int conns = ProxyStatus.activeConnections.get();
         statusDot.setBackground(dotDrawable(
                 conns > 0 ? R.drawable.dot_green : R.drawable.dot_orange));
+    }
+
+    // ---------- Intranet UPR ----------
+
+    private void abrirIntranet() {
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://intranet.upr.edu.cu"));
+            startActivity(i);
+            L.i("MainActivity", "Abriendo intranet UPR en el navegador");
+        } catch (Exception e) {
+            L.e("MainActivity", "Error abriendo intranet", e);
+            Toast.makeText(this,
+                    "No se pudo abrir el navegador: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     // ---------- Probar ----------
