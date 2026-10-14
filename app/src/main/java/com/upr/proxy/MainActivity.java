@@ -337,30 +337,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Verificar si el WiFi ya tiene proxy configurado (doble proxy rompe la app)
-        if (wifiTieneProxyConfigurado()) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Quita el proxy del WiFi")
-                    .setMessage(
-                        "Este WiFi tiene un proxy configurado manualmente.\n\n"
-                        + "UPR Proxy necesita que el WiFi use conexión normal "
-                        + "para enrutar el tráfico por su propia VPN.\n\n"
-                        + "Ve a:\n"
-                        + "  Ajustes → WiFi → UPR-WIFI → Proxy → Ninguno\n\n"
-                        + "Luego vuelve a pulsar Conectar."
-                    )
-                    .setPositiveButton("Abrir Ajustes WiFi", (d, w) -> {
-                        try {
-                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                        } catch (Exception ignored) {
-                            startActivity(new Intent(Settings.ACTION_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton("Cancelar", null)
-                    .show();
-            return;
-        }
-
         btnToggle.setEnabled(false);
         btnToggle.setText("Verificando proxy…");
         if (spinnerToggle != null) spinnerToggle.setVisibility(android.view.View.VISIBLE);

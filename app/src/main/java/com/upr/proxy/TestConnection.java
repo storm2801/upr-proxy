@@ -67,7 +67,23 @@ public class TestConnection {
     }
 
     private static boolean test(String host, int port, String user, String pass) throws Exception {
-        L.i(TAG, "Iniciando prueba de conexión contra " + host + ":" + port);
+        // Si el host es el dominio, probar primero el dominio y luego la IP directa
+        if ("proxy.upr.edu.cu".equals(host)) {
+            try {
+                return testDirecto("proxy.upr.edu.cu", port, user, pass);
+            } catch (java.net.UnknownHostException e) {
+                L.i(TAG, "Dominio no resuelve, probando IP directa 10.2.1.80");
+                return testDirecto("10.2.1.80", port, user, pass);
+            } catch (Exception e) {
+                L.i(TAG, "Dominio falló (" + e.getMessage() + "), probando IP directa");
+                return testDirecto("10.2.1.80", port, user, pass);
+            }
+        }
+        return testDirecto(host, port, user, pass);
+    }
+
+    private static boolean testDirecto(String host, int port, String user, String pass) throws Exception {
+        L.i(TAG, "Probando contra " + host + ":" + port);
 
         Socket s = new Socket();
         try {
