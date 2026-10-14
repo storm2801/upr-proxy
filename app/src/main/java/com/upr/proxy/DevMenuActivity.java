@@ -95,7 +95,7 @@ public class DevMenuActivity extends AppCompatActivity {
             L.i("DevMenu", "→ Generar reporte de diagnóstico");
             quickToast("Generando reporte…");
             ui.postDelayed(() -> {
-                DiagnosticReport.generateAndShare(DevMenuActivity.this);
+                DiagnosticReport.generateAndShow(DevMenuActivity.this);
             }, 300);
         });
 
