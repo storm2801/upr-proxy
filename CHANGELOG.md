@@ -27,6 +27,22 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.0.0-beta27] — 2026-10-15
+
+### Añadido
+- **Reporte de diagnóstico completo** en el menú dev
+- Botón 'Generar reporte de diagnóstico' en el menú dev
+
+### Eliminado
+- Botón 'Información del sistema'
+- Botón 'Copiar todos los logs'
+- Botón 'Borrar logs'
+
+### Notas
+- Beta26 se descarta por error de secuencia en el tag
+
+---
+
 ## [1.0.0-beta25] — 2026-10-14
 
 ### Añadido — Bloque 1 completo

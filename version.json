@@ -1,8 +1,8 @@
 {
-  "versionCode": 25,
-  "versionName": "1.0.0-beta25",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta25/UPRProxy-1.0.0-beta25-release.apk",
-  "changelog": "• NUEVO: WebView con autofill del portal UPR (usuario/contraseña se rellenan solos)\n• NUEVO: Quick Settings Tile (conectar VPN desde el panel de notificaciones)\n• NUEVO: Botón 'Configurar WiFi (proxy)' para ir directo a los ajustes\n• El botón 'Abrir intranet UPR' ahora abre el login embebido con autofill",
+  "versionCode": 27,
+  "versionName": "1.0.0-beta27",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta27/UPRProxy-1.0.0-beta27-release.apk",
+  "changelog": "• NUEVO: Reporte de diagnóstico completo exportable\n• El reporte incluye: dispositivo, app, VPN, red, logs\n• Menú dev simplificado",
   "mandatory": false,
-  "publishedAt": "2026-10-14"
+  "publishedAt": "2026-10-15"
 }
