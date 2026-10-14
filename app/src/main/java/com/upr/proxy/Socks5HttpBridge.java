@@ -211,15 +211,42 @@ public class Socks5HttpBridge {
                 String line;
                 while ((line = readLine(pIn)) != null && !line.isEmpty()) { /* ignorar */ }
 
+                L.i(TAG, "✅ Proxy aceptó CONNECT → " + host + ":" + destPort);
                 sendSocksReply(out, 0x00);
 
                 ProxyStatus.activeConnections.incrementAndGet();
                 ProxyStatus.totalConnections.incrementAndGet();
                 counted = true;
 
-                // Tubería bidireccional
-                pipe(in, pOut, false);  // subida cliente → proxy
-                pipe(pIn, out, true);   // bajada proxy → cliente
+                // Tubería bidireccional EN PARALELO.
+                // Los dos pipes DEBEN correr en hilos separados.
+                final java.net.Socket fClient = client;
+                final java.net.Socket fProxy = proxy;
+
+                Thread upPipe = new Thread(() -> {
+                    try {
+                        pipe(in, pOut, false);
+                    } finally {
+                        try { fProxy.shutdownOutput(); } catch (Exception ignored) {}
+                    }
+                }, "socks-up");
+
+                Thread downPipe = new Thread(() -> {
+                    try {
+                        pipe(pIn, out, true);
+                    } finally {
+                        try { fClient.shutdownOutput(); } catch (Exception ignored) {}
+                    }
+                }, "socks-down");
+
+                upPipe.start();
+                downPipe.start();
+                try {
+                    upPipe.join();
+                    downPipe.join();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
 
             } catch (IOException e) {
                 L.w(TAG, "Error conectando al proxy: " + e.getMessage());

@@ -59,7 +59,7 @@ public class ProxyForwarder implements Runnable {
 
             File cfg = new File(context.getCacheDir(), "hev.yaml");
             try (FileWriter w = new FileWriter(cfg)) {
-                w.write("tunnel:\n  mtu: 8500\n\n");
+                w.write("tunnel:\n  mtu: 1400\n\n");
                 w.write("socks5:\n  port: 1080\n  address: 127.0.0.1\n\n");
                 w.write("misc:\n");
                 w.write("  task-stack-size: 20480\n");
