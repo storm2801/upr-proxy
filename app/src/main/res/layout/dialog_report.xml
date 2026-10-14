@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_card_bg"
+    android:elevation="8dp">
+
+    <!-- Header con título y botón copiar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reporte de diagnóstico"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            android:textColor="@color/upr_green_dark"/>
+
+        <!-- Botón copiar arriba a la derecha -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopyReport"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="Copiar reporte"
+            app:icon="@android:drawable/ic_menu_edit"
+            app:iconTint="@color/upr_green"
+            app:iconSize="20dp"
+            android:backgroundTint="@android:color/transparent"/>
+    </LinearLayout>
+
+    <!-- Separador -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/upr_green_bg"/>
+
+    <!-- Contenido del reporte (scrollable) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:maxHeight="420dp"
+        android:padding="16dp"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/txtReportContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="11sp"
+            android:typeface="monospace"
+            android:textColor="@color/upr_green_dark"
+            android:textIsSelectable="true"
+            android:lineSpacingExtra="2dp"/>
+    </ScrollView>
+
+    <!-- Botón cerrar -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCloseReport"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="20dp"
+        android:text="Cerrar"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="26dp"
+        android:backgroundTint="@color/upr_green"
+        android:textColor="@color/white"/>
+
+</LinearLayout>

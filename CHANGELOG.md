@@ -27,6 +27,17 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.0.0-beta28] — 2026-10-15
+
+### Cambiado
+- El reporte de diagnóstico ahora se muestra en un diálogo en pantalla,
+  no se comparte directamente. El usuario puede verlo, copiarlo con un
+  botón en la esquina superior derecha, o cerrarlo.
+- Texto del botón simplificado: 'Generar reporte' (antes tenía emoji y
+  texto largo).
+
+---
+
 ## [1.0.0-beta27] — 2026-10-15
 
 ### Añadido

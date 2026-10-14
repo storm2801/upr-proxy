@@ -1,32 +1,38 @@
 package com.upr.proxy;
 
 import android.app.ActivityManager;
+import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
-import android.net.LinkAddress;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.ProxyInfo;
-import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -36,44 +42,65 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- * Genera un reporte de diagnóstico completo con toda la información
- * necesaria para depurar problemas de la app.
+ * Genera un reporte de diagnóstico completo y lo muestra en un diálogo.
+ * El usuario puede copiarlo al portapapeles desde el botón superior.
  */
 public class DiagnosticReport {
 
     private static final String TAG = "DiagnosticReport";
 
-    public static void generateAndShare(AppCompatActivity ctx) {
+    /**
+     * Genera el reporte y lo muestra en un diálogo.
+     */
+    public static void generateAndShow(AppCompatActivity ctx) {
         try {
             String report = buildReport(ctx);
-
-            File dir = new File(ctx.getCacheDir(), "diagnostics");
-            if (!dir.exists()) dir.mkdirs();
-
-            String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US)
-                    .format(new Date());
-            File out = new File(dir, "upr-diagnostico-" + timestamp + ".txt");
-
-            try (FileWriter w = new FileWriter(out)) {
-                w.write(report);
-            }
-
-            L.i(TAG, "Reporte generado: " + out.getAbsolutePath()
-                    + " (" + out.length() + " bytes)");
-
-            Uri uri = FileProvider.getUriForFile(ctx,
-                    ctx.getPackageName() + ".fileprovider", out);
-
-            Intent share = new Intent(Intent.ACTION_SEND);
-            share.setType("text/plain");
-            share.putExtra(Intent.EXTRA_STREAM, uri);
-            share.putExtra(Intent.EXTRA_SUBJECT, "Diagnóstico UPR Proxy");
-            share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            ctx.startActivity(Intent.createChooser(share, "Compartir reporte"));
-
+            showDialog(ctx, report);
         } catch (Exception e) {
             L.e(TAG, "Error generando reporte", e);
+            Toast.makeText(ctx, "Error generando reporte: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
+    }
+
+    private static void showDialog(AppCompatActivity ctx, String report) {
+        final Dialog d = new Dialog(ctx);
+        d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        View v = LayoutInflater.from(ctx).inflate(R.layout.dialog_report, null);
+        d.setContentView(v);
+
+        if (d.getWindow() != null) {
+            d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(d.getWindow().getAttributes());
+            lp.width = (int) (ctx.getResources().getDisplayMetrics().widthPixels * 0.95);
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            d.getWindow().setAttributes(lp);
+        }
+
+        TextView tvContent = v.findViewById(R.id.txtReportContent);
+        tvContent.setText(report);
+
+        // Botón copiar arriba a la derecha
+        v.findViewById(R.id.btnCopyReport).setOnClickListener(x -> {
+            ClipboardManager cm = (ClipboardManager)
+                    ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (cm != null) {
+                cm.setPrimaryClip(ClipData.newPlainText(
+                        "UPR Proxy — Reporte de diagnóstico", report));
+                Toast.makeText(ctx, "✅ Reporte copiado al portapapeles",
+                        Toast.LENGTH_SHORT).show();
+                L.i(TAG, "Reporte copiado (" + report.length() + " caracteres)");
+            }
+        });
+
+        // Botón cerrar
+        v.findViewById(R.id.btnCloseReport).setOnClickListener(x -> d.dismiss());
+
+        d.setCancelable(true);
+        d.show();
+
+        L.i(TAG, "Reporte mostrado en diálogo (" + report.length() + " caracteres)");
     }
 
     private static String buildReport(Context ctx) {
@@ -88,7 +115,7 @@ public class DiagnosticReport {
         sb.append(line).append("\n");
 
         // 1. Dispositivo
-        sb.append("═══ 1. INFORMACIÓN DEL DISPOSITIVO ═══\n");
+        sb.append("═══ 1. DISPOSITIVO ═══\n");
         sb.append("Fabricante:        ").append(Build.MANUFACTURER).append("\n");
         sb.append("Marca:             ").append(Build.BRAND).append("\n");
         sb.append("Modelo:            ").append(Build.MODEL).append("\n");
@@ -110,8 +137,8 @@ public class DiagnosticReport {
         sb.append("Rooted:            ").append(isRooted() ? "Sí" : "No").append("\n");
         sb.append("Emulador:          ").append(isEmulator() ? "Sí" : "No").append("\n\n");
 
-        // 2. Memoria y almacenamiento
-        sb.append("═══ 2. MEMORIA Y ALMACENAMIENTO ═══\n");
+        // 2. Memoria
+        sb.append("═══ 2. MEMORIA ═══\n");
         try {
             ActivityManager am = (ActivityManager)
                     ctx.getSystemService(Context.ACTIVITY_SERVICE);
@@ -131,7 +158,7 @@ public class DiagnosticReport {
             long blockSize = stat.getBlockSizeLong();
             long total = stat.getBlockCountLong() * blockSize;
             long avail = stat.getAvailableBlocksLong() * blockSize;
-            sb.append(String.format(Locale.US, "Almacenamiento:    %.1f GB libres / %.1f GB totales\n",
+            sb.append(String.format(Locale.US, "Almacenamiento:    %.1f GB libres / %.1f GB\n",
                     avail / (1024.0 * 1024 * 1024),
                     total / (1024.0 * 1024 * 1024)));
         } catch (Exception ignored) {}
@@ -143,13 +170,13 @@ public class DiagnosticReport {
             DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
             sb.append("Resolución:        ").append(dm.widthPixels).append(" x ")
                     .append(dm.heightPixels).append(" px\n");
-            sb.append(String.format(Locale.US, "Densidad:          %d dpi (%.2f x)\n",
-                    dm.densityDpi, dm.density));
+            sb.append(String.format(Locale.US, "Densidad:          %d dpi\n",
+                    dm.densityDpi));
         } catch (Exception ignored) {}
         sb.append("\n");
 
         // 4. App
-        sb.append("═══ 4. INFORMACIÓN DE LA APP ═══\n");
+        sb.append("═══ 4. APP ═══\n");
         try {
             PackageManager pm = ctx.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(ctx.getPackageName(), 0);
@@ -165,10 +192,8 @@ public class DiagnosticReport {
 
             ApplicationInfo ai = pi.applicationInfo;
             File apk = new File(ai.sourceDir);
-            sb.append("Ruta del APK:      ").append(ai.sourceDir).append("\n");
-            sb.append(String.format(Locale.US, "Tamaño del APK:    %.2f MB\n",
+            sb.append(String.format(Locale.US, "Tamaño APK:        %.2f MB\n",
                     apk.length() / (1024.0 * 1024)));
-            sb.append("Target SDK:        ").append(ai.targetSdkVersion).append("\n");
             sb.append("Debug:             ")
                     .append((ai.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 ? "Sí" : "No")
                     .append("\n");
@@ -182,17 +207,17 @@ public class DiagnosticReport {
                     StringBuilder hex = new StringBuilder();
                     for (byte b : hash) hex.append(String.format("%02x", b));
                     sb.append("Firma SHA-256:     ")
-                            .append(hex.substring(0, Math.min(32, hex.length())))
+                            .append(hex.substring(0, Math.min(16, hex.length())))
                             .append("...\n");
                 }
             } catch (Exception ignored) {}
         } catch (Exception e) {
-            sb.append("Error obteniendo info de la app: ").append(e.getMessage()).append("\n");
+            sb.append("Error: ").append(e.getMessage()).append("\n");
         }
         sb.append("\n");
 
-        // 5. Config
-        sb.append("═══ 5. CONFIGURACIÓN GUARDADA ═══\n");
+        // 5. Configuración
+        sb.append("═══ 5. CONFIGURACIÓN ═══\n");
         try {
             SharedPreferences prefs = SecurePrefs.get(ctx);
             sb.append("Servidor:          ").append(prefs.getString("server", "—")).append("\n");
@@ -204,29 +229,26 @@ public class DiagnosticReport {
                     .append("\n");
             sb.append("Modo dev:          ")
                     .append(prefs.getBoolean("developer_mode", false) ? "Sí" : "No").append("\n");
-            sb.append("Onboarding:        ")
-                    .append(prefs.getBoolean("onboarding_done", false) ? "Completado" : "Pendiente")
-                    .append("\n");
         } catch (Exception e) {
             sb.append("Error: ").append(e.getMessage()).append("\n");
         }
         sb.append("\n");
 
         // 6. VPN
-        sb.append("═══ 6. ESTADO DE LA VPN ═══\n");
+        sb.append("═══ 6. VPN ═══\n");
         sb.append("VPN activa:        ").append(ProxyStatus.vpnRunning.get() ? "Sí" : "No").append("\n");
         sb.append("Servidor proxy:    ").append(ProxyStatus.serverHost)
                 .append(":").append(ProxyStatus.serverPort).append("\n");
         sb.append("Uptime:            ").append(ProxyStatus.formatUptime(ProxyStatus.startedAt)).append("\n");
-        sb.append("Conexiones activas: ").append(ProxyStatus.activeConnections.get()).append("\n");
-        sb.append("Conexiones totales: ").append(ProxyStatus.totalConnections.get()).append("\n");
+        sb.append("Conexiones:        ").append(ProxyStatus.activeConnections.get())
+                .append(" activas / ").append(ProxyStatus.totalConnections.get()).append(" totales\n");
         sb.append("Bytes enviados:    ").append(ProxyStatus.formatBytes(ProxyStatus.bytesSent.get())).append("\n");
         sb.append("Bytes recibidos:   ").append(ProxyStatus.formatBytes(ProxyStatus.bytesReceived.get())).append("\n");
         sb.append("Velocidad ↑:       ").append(ProxyStatus.formatSpeedUp()).append("\n");
         sb.append("Velocidad ↓:       ").append(ProxyStatus.formatSpeedDown()).append("\n\n");
 
         // 7. Red
-        sb.append("═══ 7. ESTADO DE LA RED ═══\n");
+        sb.append("═══ 7. RED ═══\n");
         try {
             ConnectivityManager cm = (ConnectivityManager)
                     ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -244,9 +266,6 @@ public class DiagnosticReport {
                     sb.append("Tipo de red:       ").append(tipo).append("\n");
                     sb.append("Internet:          ")
                             .append(caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ? "Sí" : "No")
-                            .append("\n");
-                    sb.append("Validated:         ")
-                            .append(caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ? "Sí" : "No")
                             .append("\n");
                 }
 
@@ -285,7 +304,6 @@ public class DiagnosticReport {
                         String ssid = wi.getSSID();
                         if (ssid != null) ssid = ssid.replace("\"", "");
                         sb.append("SSID:              ").append(ssid != null ? ssid : "—").append("\n");
-                        sb.append("BSSID:             ").append(wi.getBSSID() != null ? wi.getBSSID() : "—").append("\n");
                         sb.append("RSSI:              ").append(wi.getRssi()).append(" dBm\n");
                         sb.append("Velocidad link:    ").append(wi.getLinkSpeed()).append(" Mbps\n");
                     }
@@ -293,7 +311,7 @@ public class DiagnosticReport {
             } catch (Exception ignored) {}
 
         } catch (Exception e) {
-            sb.append("Error obteniendo info de red: ").append(e.getMessage()).append("\n");
+            sb.append("Error: ").append(e.getMessage()).append("\n");
         }
         sb.append("\n");
 

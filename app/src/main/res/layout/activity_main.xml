@@ -459,7 +459,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="12dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta27"
+            android:text="Versión 1.0.0-beta28"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:alpha="0.85"/>

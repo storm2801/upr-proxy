@@ -1,8 +1,8 @@
 {
-  "versionCode": 27,
-  "versionName": "1.0.0-beta27",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta27/UPRProxy-1.0.0-beta27-release.apk",
-  "changelog": "• NUEVO: Reporte de diagnóstico completo exportable\n• El reporte incluye: dispositivo, app, VPN, red, logs\n• Menú dev simplificado",
+  "versionCode": 28,
+  "versionName": "1.0.0-beta28",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta28/UPRProxy-1.0.0-beta28-release.apk",
+  "changelog": "• El reporte de diagnóstico se muestra en un diálogo\n• Botón para copiar el reporte al portapapeles en la esquina superior derecha\n• Botón 'Generar reporte' simplificado",
   "mandatory": false,
   "publishedAt": "2026-10-15"
 }
