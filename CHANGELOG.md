@@ -5,6 +5,17 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta24] — 2026-10-14
+
+### Añadido
+- Botón 'Abrir intranet UPR' en la pantalla principal. Abre
+  intranet.upr.edu.cu en el navegador por defecto.
+
+### Notas
+- Prueba del sistema de actualizaciones automáticas.
+
+---
+
 ## [1.0.0-beta23] — 2026-10-14
 
 ### Arreglado
