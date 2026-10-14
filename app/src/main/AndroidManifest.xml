@@ -57,6 +57,12 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".UprLoginActivity"
+            android:exported="false"
+            android:label="Login UPR"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".LogsActivity"
             android:exported="false"
             android:label="Logs UPR Proxy"
@@ -73,6 +79,17 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="proxy_vpn" />
+        </service>
+
+        <service
+            android:name=".VpnTileService"
+            android:icon="@drawable/ic_notification"
+            android:label="UPR Proxy"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
         </service>
 
     </application>

@@ -208,6 +208,21 @@
             app:strokeColor="@color/upr_green"
             app:strokeWidth="2dp"/>
 
+        <!-- Configurar WiFi UPR -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWifiSettings"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="Configurar WiFi (proxy)"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="24dp"
+            android:textColor="@color/upr_green_dark"
+            app:strokeColor="@color/upr_green"
+            app:strokeWidth="2dp"/>
+
         <!-- Probar conexión -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTest"
@@ -444,7 +459,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="12dp"
             android:gravity="center"
-            android:text="Versión 1.0.0-beta24"
+            android:text="Versión 1.0.0-beta25"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:alpha="0.85"/>
