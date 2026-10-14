@@ -5,6 +5,23 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta20] — 2026-10-14
+
+### Arreglado
+- **Bloqueo excesivo del proxy**: la app ya no impide conectar cuando el
+  WiFi tiene proxy configurado. En la UPR es necesario tener el proxy
+  del WiFi activo para llegar al servidor, así que el bloqueo era
+  contraproducente.
+- **DNS del dominio no resuelve sin proxy**: si `proxy.upr.edu.cu` no
+  resuelve (WiFi sin proxy), la app prueba automáticamente la IP
+  directa `10.2.1.80` como fallback.
+
+### Resultado
+- Funciona con WiFi **con proxy** (caso normal en la UPR).
+- Funciona con WiFi **sin proxy** (usa IP directa como fallback).
+
+---
+
 ## [1.0.0-beta19] — 2026-10-12
 
 ### Arreglado

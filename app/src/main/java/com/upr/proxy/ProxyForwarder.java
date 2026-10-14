@@ -43,7 +43,17 @@ public class ProxyForwarder implements Runnable {
     @Override
     public void run() {
         try {
-            bridge = new Socks5HttpBridge(proxyHost, proxyPort, proxyUser, proxyPassword);
+            // Resolver el proxy real: intentar dominio, luego IP directa
+            String realHost = proxyHost;
+            try {
+                java.net.InetAddress.getByName(proxyHost);
+                L.i(TAG, "Dominio resuelve OK: " + proxyHost);
+            } catch (Exception e) {
+                L.w(TAG, "Dominio " + proxyHost + " no resuelve, usando IP directa 10.2.1.80");
+                realHost = "10.2.1.80";
+            }
+
+            bridge = new Socks5HttpBridge(realHost, proxyPort, proxyUser, proxyPassword);
             bridge.start();
             L.i(TAG, "Puente SOCKS5→HTTP iniciado en 127.0.0.1:1080");
 
