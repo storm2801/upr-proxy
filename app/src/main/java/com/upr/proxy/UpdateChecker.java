@@ -22,7 +22,7 @@ public class UpdateChecker {
 
     private static final String TAG = "UpdateChecker";
     private static final String VERSION_URL =
-            "https://raw.githubusercontent.com/storm2801/upr-proxy/main/version.json";
+            "https://github.com/storm2801/upr-proxy/raw/main/version.json";
     private static final int TIMEOUT_MS = 8000;
 
     private static final ExecutorService pool = Executors.newSingleThreadExecutor();
