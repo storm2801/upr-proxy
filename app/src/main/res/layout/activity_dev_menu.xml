@@ -159,6 +159,18 @@
             android:layout_marginStart="4dp"/>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGenerateReport"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="📋  Generar reporte de diagnóstico"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            android:backgroundTint="@color/upr_green"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewLogs"
             android:layout_width="match_parent"
             android:layout_height="52dp"
@@ -186,33 +198,9 @@
             android:textColor="@color/upr_green_dark"
             android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSystemInfo"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Información del sistema"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            app:cornerRadius="14dp"
-            app:strokeColor="@color/upr_green"
-            app:strokeWidth="2dp"
-            android:backgroundTint="@color/white"
-            android:textColor="@color/upr_green_dark"
-            android:layout_marginBottom="8dp"/>
+        
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCopyLogs"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Copiar todos los logs"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            app:cornerRadius="14dp"
-            app:strokeColor="@color/upr_green"
-            app:strokeWidth="2dp"
-            android:backgroundTint="@color/white"
-            android:textColor="@color/upr_green_dark"
-            android:layout_marginBottom="18dp"/>
+        
 
         <!-- VPN -->
         <TextView
@@ -252,19 +240,7 @@
             android:layout_marginBottom="6dp"
             android:layout_marginStart="4dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnClearLogs"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Borrar logs"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            app:cornerRadius="14dp"
-            app:strokeColor="@color/upr_green"
-            app:strokeWidth="2dp"
-            android:backgroundTint="@color/white"
-            android:textColor="@color/upr_green_dark"
-            android:layout_marginBottom="8dp"/>
+        
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnResetOnboarding"

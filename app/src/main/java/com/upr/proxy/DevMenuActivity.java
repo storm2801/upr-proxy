@@ -91,6 +91,14 @@ public class DevMenuActivity extends AppCompatActivity {
         });
 
         // DIAGNÓSTICO
+        findViewById(R.id.btnGenerateReport).setOnClickListener(v -> {
+            L.i("DevMenu", "→ Generar reporte de diagnóstico");
+            quickToast("Generando reporte…");
+            ui.postDelayed(() -> {
+                DiagnosticReport.generateAndShare(DevMenuActivity.this);
+            }, 300);
+        });
+
         findViewById(R.id.btnViewLogs).setOnClickListener(v -> {
             L.i("DevMenu", "→ Abrir logs");
             try {
@@ -107,16 +115,6 @@ public class DevMenuActivity extends AppCompatActivity {
             probarConexion();
         });
 
-        findViewById(R.id.btnSystemInfo).setOnClickListener(v -> {
-            L.i("DevMenu", "→ Info sistema");
-            mostrarSystemInfo();
-        });
-
-        findViewById(R.id.btnCopyLogs).setOnClickListener(v -> {
-            L.i("DevMenu", "→ Copiar logs");
-            copiarLogs();
-        });
-
         // VPN
         findViewById(R.id.btnForceReconnect).setOnClickListener(v -> {
             L.i("DevMenu", "→ Forzar reconexión");
@@ -124,12 +122,6 @@ public class DevMenuActivity extends AppCompatActivity {
         });
 
         // DATOS
-        findViewById(R.id.btnClearLogs).setOnClickListener(v -> {
-            LogBuffer.clear();
-            L.i("DevMenu", "Logs borrados");
-            quickToast("Logs borrados");
-        });
-
         findViewById(R.id.btnResetOnboarding).setOnClickListener(v -> {
             SecurePrefs.get(this).edit().putBoolean("onboarding_done", false).apply();
             L.i("DevMenu", "Onboarding reactivado");
