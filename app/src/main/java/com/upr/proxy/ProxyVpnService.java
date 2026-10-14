@@ -87,6 +87,17 @@ public class ProxyVpnService extends VpnService {
             // "UDP DNS atrapado en túnel TCP" y no requiere excludeRoute
             // (que colgaba en Samsung).
 
+            // DNS de la UPR: 10.2.144.1 (primario) y 10.2.1.8 (secundario).
+            // Los añadimos al túnel para que la app resuelva dominios
+            // aunque no los resuelva el sistema.
+            try {
+                builder.addDnsServer(InetAddress.getByName("10.2.144.1"));
+                builder.addDnsServer(InetAddress.getByName("10.2.1.8"));
+                L.i(TAG, "DNS UPR añadidos: 10.2.144.1, 10.2.1.8");
+            } catch (Exception e) {
+                L.w(TAG, "Error añadiendo DNS: " + e.getMessage());
+            }
+
             try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}
 
             vpnInterface = builder.establish();

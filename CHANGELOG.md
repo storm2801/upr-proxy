@@ -5,6 +5,34 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta21] — 2026-10-14
+
+### Arreglado
+- **BUG CRÍTICO: pipes secuenciales**. Los flujos cliente→proxy y
+  proxy→cliente se ejecutaban uno tras otro, bloqueando la respuesta.
+  Ahora corren en hilos paralelos. ESTE era el bug que impedía que la
+  app funcionara: los CONNECT llegaban al proxy, el proxy respondía
+  200, pero la respuesta nunca llegaba a las apps.
+- MTU reducido de 8500 a 1400 (evita fragmentación).
+- DNS de la UPR (10.2.144.1, 10.2.1.8) añadidos al túnel para que la
+  resolución de dominios funcione.
+
+---
+
+## [1.0.0-beta21] — 2026-10-14
+
+### Arreglado
+- **BUG CRÍTICO: pipes secuenciales**. Los flujos cliente→proxy y
+  proxy→cliente se ejecutaban uno tras otro, bloqueando la respuesta.
+  Ahora corren en hilos paralelos. ESTE era el bug que impedía que la
+  app funcionara: los CONNECT llegaban al proxy, el proxy respondía
+  200, pero la respuesta nunca llegaba a las apps.
+- MTU reducido de 8500 a 1400 (evita fragmentación).
+- DNS de la UPR (10.2.144.1, 10.2.1.8) añadidos al túnel para que la
+  resolución de dominios funcione.
+
+---
+
 ## [1.0.0-beta20] — 2026-10-14
 
 ### Arreglado
