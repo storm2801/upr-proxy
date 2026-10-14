@@ -1,8 +1,8 @@
 {
-  "versionCode": 24,
-  "versionName": "1.0.0-beta24",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta24/UPRProxy-1.0.0-beta24-release.apk",
-  "changelog": "Nueva versión 1.0.0-beta24 disponible. Consulta el CHANGELOG para más detalles.",
+  "versionCode": 25,
+  "versionName": "1.0.0-beta25",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta25/UPRProxy-1.0.0-beta25-release.apk",
+  "changelog": "Nueva versión 1.0.0-beta25 disponible. Consulta el CHANGELOG para más detalles.",
   "mandatory": false,
   "publishedAt": "2026-10-14"
 }
