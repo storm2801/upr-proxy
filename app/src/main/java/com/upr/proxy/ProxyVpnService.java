@@ -78,24 +78,20 @@ public class ProxyVpnService extends VpnService {
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
 
-            // NOTA IMPORTANTE:
-            // NO añadimos addDnsServer() al Builder. Android, cuando no
-            // encuentra DNS configurados en el túnel, resuelve los dominios
-            // con los DNS del WiFi FUERA del túnel. Esto es lo que queremos:
-            // solo el tráfico IP real pasa por el proxy, el DNS se resuelve
-            // localmente por el WiFi. Evita completamente el problema de
-            // "UDP DNS atrapado en túnel TCP" y no requiere excludeRoute
-            // (que colgaba en Samsung).
-
-            // DNS de la UPR: 10.2.144.1 (primario) y 10.2.1.8 (secundario).
-            // Los añadimos al túnel para que la app resuelva dominios
-            // aunque no los resuelva el sistema.
             try {
-                builder.addDnsServer(InetAddress.getByName("10.2.144.1"));
-                builder.addDnsServer(InetAddress.getByName("10.2.1.8"));
-                L.i(TAG, "DNS UPR añadidos: 10.2.144.1, 10.2.1.8");
+                builder.addAddress("fd00:1::2", 128);
+                builder.addRoute("::", 0);
             } catch (Exception e) {
-                L.w(TAG, "Error añadiendo DNS: " + e.getMessage());
+                L.w(TAG, "No se pudo agregar IPv6 a la interfaz VPN: " + e.getMessage());
+            }
+
+            // Configurar DNS virtual para mapdns de hev-socks5-tunnel.
+            // Intercepta las consultas DNS y las mapea a dominios para el proxy HTTP.
+            try {
+                builder.addDnsServer(InetAddress.getByName("198.18.0.2"));
+                L.i(TAG, "DNS virtual mapdns configurado: 198.18.0.2");
+            } catch (Exception e) {
+                L.w(TAG, "Error añadiendo DNS virtual mapdns: " + e.getMessage());
             }
 
             try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}

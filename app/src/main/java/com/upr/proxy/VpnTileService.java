@@ -43,7 +43,7 @@ public class VpnTileService extends TileService {
             L.i("VpnTile", "Iniciando VPN desde Tile");
             SharedPreferences prefs = SecurePrefs.get(this);
             Intent start = new Intent(this, ProxyVpnService.class);
-            start.putExtra("server", prefs.getString("server", "10.2.1.80"));
+            start.putExtra("server", prefs.getString("server", "proxy.upr.edu.cu"));
             start.putExtra("port", prefs.getString("port", "8080"));
             start.putExtra("user", prefs.getString("user", ""));
             start.putExtra("password", prefs.getString("password", ""));

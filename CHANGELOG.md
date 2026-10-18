@@ -27,6 +27,15 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.0.0-beta29] — 2026-10-18
+
+### Arreglado
+- **Tunelización DNS completa**: implementado `mapdns` en la configuración YAML del túnel nativo para capturar las consultas DNS y mapearlas internamente, permitiendo resolver dominios correctamente a través del túnel.
+- **Soporte IPv6**: configurado el túnel con dirección IPv6 (fd00:1::2) para habilitar tráfico IPv6 a través del proxy cuando sea necesario.
+- **Bug de handshake**: corregido el formato del host en el comando `CONNECT` HTTP cuando se utilizan IPs literales.
+
+---
+
 ## [1.0.0-beta28] — 2026-10-15
 
 ### Cambiado

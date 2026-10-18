@@ -157,7 +157,7 @@ public class Socks5HttpBridge {
                 int len = lenBuf[0] & 0xFF;
                 byte[] d = new byte[len];
                 if (!readFully(in, d)) return;
-                host = new String(d);
+                host = new String(d, java.nio.charset.StandardCharsets.UTF_8);
             } else if (atyp == 0x04) {
                 byte[] a = new byte[16];
                 if (!readFully(in, a)) return;
@@ -189,15 +189,20 @@ public class Socks5HttpBridge {
                 OutputStream pOut = proxy.getOutputStream();
                 InputStream pIn = proxy.getInputStream();
 
+                String formattedHost = host;
+                if (formattedHost != null && formattedHost.contains(":") && !formattedHost.startsWith("[")) {
+                    formattedHost = "[" + formattedHost + "]";
+                }
+
                 StringBuilder sb = new StringBuilder();
-                sb.append("CONNECT ").append(host).append(":").append(destPort)
+                sb.append("CONNECT ").append(formattedHost).append(":").append(destPort)
                         .append(" HTTP/1.1\r\n");
-                sb.append("Host: ").append(host).append(":").append(destPort).append("\r\n");
+                sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
                 if (authHeader != null) {
                     sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
                 }
                 sb.append("Proxy-Connection: Keep-Alive\r\n\r\n");
-                byte[] reqBytes = sb.toString().getBytes("UTF-8");
+                byte[] reqBytes = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 pOut.write(reqBytes);
                 pOut.flush();
                 ProxyStatus.bytesSent.addAndGet(reqBytes.length);
