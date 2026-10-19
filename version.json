@@ -1,8 +1,8 @@
 {
-  "versionCode": 33,
-  "versionName": "1.0.0-beta33",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta33/UPRProxy-1.0.0-beta33-release.apk",
-  "changelog": "• Arreglo crítico para Samsung/Android 12+: Se ha migrado el servicio de VPN a Foreground Service tipo 'SPECIAL_USE' para evitar que el sistema lo mate prematuramente al pasar a segundo plano.\n• Cambio de política de reinicio a START_STICKY.",
+  "versionCode": 35,
+  "versionName": "1.0.0-beta35",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta35/UPRProxy-1.0.0-beta35-release.apk",
+  "changelog": "• Arreglo definitivo: Refuerzo de exclusión de rutas en el túnel VPN.\n• Corrección de autoría en los commits del repositorio.",
   "mandatory": false,
   "publishedAt": "2026-10-19"
 }

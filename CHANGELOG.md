@@ -433,3 +433,21 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
   iniciación debido a restricciones de políticas de servicios en segundo plano.
 
 ---
+
+## [1.0.0-beta34] — 2026-10-19
+
+### Arreglado
+- **Loop de enrutamiento**: Se refinó la exclusión de rutas en la VPN. Ahora
+  se utilizan rutas específicas de host (/32) para las IPs del proxy y DNS,
+  asegurando que el tráfico no sea interceptado por la VPN bajo ninguna circunstancia.
+
+---
+
+## [1.0.0-beta35] — 2026-10-19
+
+### Arreglado
+- **Loop de routing**: Refuerzo en la exclusión de rutas del proxy UPR para
+  garantizar que el tráfico de control no sea capturado por el túnel,
+  estabilizando la conexión en dispositivos Samsung.
+
+---

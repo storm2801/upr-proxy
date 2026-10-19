@@ -98,14 +98,15 @@ public class ProxyVpnService extends VpnService {
             // AAAA. Al solo dar IPv4 en el túnel, el kernel fuerza IPv4 y las
             // apps caen al registro A (happy eyeballs).
 
-            // Excluir del túnel las IPs del proxy y DNS locales: con
-            // addRoute("0.0.0.0", 0) todo el tráfico del móvil pasa por la VPN,
-            // y sin estas exclusiones el puente SOCKS5 (127.0.0.1:1080) ->
-            // proxy (10.2.1.80) entraba en loop infinito dentro del túnel.
+            // Excluir del túnel las IPs del proxy y DNS locales:
+            // Usamos rutas con prefijos específicos para garantizar que el
+            // tráfico al proxy de la UPR NO pase por la interfaz VPN,
+            // evitando el bucle de enrutamiento.
             for (String ip : EXCLUDED_ROUTES) {
                 try {
+                    // Usamos /32 para rutas específicas de host
                     builder.addRoute(ip, 32);
-                    L.i(TAG, "Ruta excluida del túnel: " + ip);
+                    L.i(TAG, "Ruta específica excluida: " + ip + "/32");
                 } catch (Exception e) {
                     L.w(TAG, "No se pudo excluir ruta " + ip + ": " + e.getMessage());
                 }
