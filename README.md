@@ -41,28 +41,14 @@ App Android que enruta **todo el tráfico del teléfono** por el proxy de la UPR
 
 https://github.com/storm2801/upr-proxy/releases/latest
 
-**2. Desactiva Play Protect temporalmente**
+**2. Configura los permisos**
 
-Play Store → tu perfil → Play Protect → ⚙️ → desactivar "Analizar apps".
+Al instalar, asegúrate de otorgar los permisos de batería necesarios:
+Ajustes → Aplicaciones → UPR Proxy → Batería → **"Sin restricciones"** (Crucial en Samsung/Android 12+).
 
-**3. Permite instalar apps desconocidas**
+**3. Conecta**
 
-Ajustes → Aplicaciones → Acceso especial → Instalar apps desconocidas → elige tu navegador → activar.
-
-**4. Instala el APK**
-
-Gestor de archivos → Descargas → toca el APK → Instalar.
-
-**5. Configura**
-
-| Campo | Valor |
-|---|---|
-| Servidor | `proxy.upr.edu.cu` |
-| Puerto | `8080` |
-| Usuario | tu usuario UPR |
-| Contraseña | tu contraseña del proxy |
-
-Pulsa **Conectar** y acepta el permiso de VPN.
+Abre la app, introduce tu usuario y contraseña, y pulsa **Conectar**. Acepta la solicitud de conexión VPN. La app se encargará de gestionar el enrutamiento correctamente.
 
 ## Cómo funciona
 
