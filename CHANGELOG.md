@@ -5,6 +5,28 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta30] — 2026-10-19
+
+### Arreglado
+- **Configuración de red del túnel**: se aseguran `addRoute("0.0.0.0", 0)` y
+  `addRoute("::", 0)` junto con `addAddress` IPv4/IPv6, para que todo el tráfico
+  del móvil sea redirigido por la VPN y pase por el proxy.
+- **DNS del sistema en el túnel**: se añade `addDnsServer` con la dirección del
+  DNS virtual mapdns (198.18.0.2) para que las consultas de dominios se resuelvan
+  dentro del túnel y no fallen por timeout.
+- **Handshake CONNECT robusto**: se mantiene el fallback a IP directa
+  (`10.2.1.80`) cuando el dominio `proxy.upr.edu.cu` no resuelve, y se
+  formatea correctamente el host en el comando CONNECT tanto para dominio como
+  para IP literal.
+- **Timeouts**: CONNECT al proxy aumentado a 15 s y timeout de lectura a 60 s,
+  evitando fallos de conexión en redes con latencia alta.
+
+### Mejorado
+- **Diagnóstico en tiempo real**: la pantalla principal muestra SSID, IP local,
+  gateway, DNS y proxy del WiFi actual, junto con el estado del proxy y la VPN.
+
+---
+
 ## [1.0.0-beta26] — 2026-10-15
 
 ### Añadido

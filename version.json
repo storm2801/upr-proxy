@@ -1,8 +1,8 @@
 {
-  "versionCode": 29,
-  "versionName": "1.0.0-beta29",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta29/UPRProxy-1.0.0-beta29-release.apk",
-  "changelog": "• Arreglado: soporte para tunelización DNS completa mediante mapdns\n• Arreglado: soporte de conexiones IPv6 a través del proxy\n• Arreglado: bug en el handshake CONNECT cuando el host era una IP literal",
+  "versionCode": 30,
+  "versionName": "1.0.0-beta30",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta30/UPRProxy-1.0.0-beta30-release.apk",
+  "changelog": "• Arreglado: configuración de red (routes, DNS, IPv4/IPv6) aplicada correctamente al túnel para evitar timeouts al conectar\n• Arreglado: resolución de DNS del sistema incluida en el túnel (addDnsServer) para que los dominios se resuelvan dentro de la VPN\n• Arreglado: rutas por defecto 0.0.0.0/0 y ::/0 para que todo el tráfico pase por el proxy\n• Mejorado: timeout de CONNECT aumentado a 15s y timeout de lectura de 60s\n• Mejorado: diagnóstico en tiempo real del estado de la red y del proxy",
   "mandatory": false,
-  "publishedAt": "2026-10-18"
+  "publishedAt": "2026-10-19"
 }
