@@ -179,7 +179,7 @@ public class Socks5HttpBridge {
             if (!readFully(in, portBuf)) return;
             int destPort = ((portBuf[0] & 0xFF) << 8) | (portBuf[1] & 0xFF);
 
-            L.d(TAG, "CONNECT → " + host + ":" + destPort);
+            // L.d(TAG, "CONNECT → " + host + ":" + destPort);
 
             // ---- Conectar al proxy HTTP (con reintentos ante 503) ----
             // El proxy de la UPR (squid) a veces devuelve 503 Service Unavailable
@@ -245,7 +245,7 @@ public class Socks5HttpBridge {
                     String line;
                     while ((line = readLine(pIn)) != null && !line.isEmpty()) { /* ignorar */ }
 
-                    L.i(TAG, "✅ Proxy aceptó CONNECT → " + host + ":" + destPort);
+                    // L.i(TAG, "✅ Proxy aceptó CONNECT → " + host + ":" + destPort);
                     sendSocksReply(out, 0x00);
 
                     ProxyStatus.activeConnections.incrementAndGet();

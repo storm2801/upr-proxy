@@ -5,6 +5,16 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta37] — 2026-10-19
+
+### Optimizado
+- **Logs de Red**: Silenciados los mensajes informativos constantes de CONNECT exitosos en `Socks5HttpBridge`, reduciendo drásticamente el uso de memoria y CPU, y dejando visible solo los errores críticos.
+
+### Arreglado
+- **Actualización**: Sincronización estricta de versiones entre `develop` y `main` para evitar que la app vuelva a descargar la misma versión en bucle.
+
+---
+
 ## [1.0.0-beta31] — 2026-10-19
 
 ### Arreglado
