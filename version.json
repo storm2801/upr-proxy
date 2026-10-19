@@ -1,8 +1,8 @@
 {
-  "versionCode": 35,
-  "versionName": "1.0.0-beta35",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta35/UPRProxy-1.0.0-beta35-release.apk",
-  "changelog": "• Arreglo definitivo: Refuerzo de exclusión de rutas en el túnel VPN.\n• Corrección de autoría en los commits del repositorio.",
+  "versionCode": 36,
+  "versionName": "1.0.0-beta36",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta36/UPRProxy-1.0.0-beta36-release.apk",
+  "changelog": "• Arreglo: Corrección del bucle de actualización (version.json sincronizado correctamente).\n• Arreglo: Estabilidad de la VPN en dispositivos Samsung.",
   "mandatory": false,
   "publishedAt": "2026-10-19"
 }
