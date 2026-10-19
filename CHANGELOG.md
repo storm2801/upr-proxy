@@ -422,3 +422,14 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
   al proxy, evitando que el buffer de logs se llene en segundos.
 
 ---
+
+## [1.0.0-beta33] — 2026-10-19
+
+### Arreglado
+- **Persistencia en Samsung/Android 12+**: El servicio VPN ahora utiliza
+   y  para evitar ser cerrado
+  por el optimizador de batería de Samsung al pasar a segundo plano.
+- **Estabilidad**: El servicio ya no se detiene automáticamente tras la
+  iniciación debido a restricciones de políticas de servicios en segundo plano.
+
+---

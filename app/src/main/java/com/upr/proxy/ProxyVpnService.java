@@ -69,10 +69,17 @@ public class ProxyVpnService extends VpnService {
         }
 
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+        // Aumentar prioridad para Samsung/Android 12+
+        Notification notif = buildNotification();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notif, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(NOTIFICATION_ID, notif);
+        }
+
         startVpn();
         iniciarActualizadorNotif();
-        return START_NOT_STICKY;
+        return START_STICKY; // Intentar que el sistema lo reviva
     }
 
     private void startVpn() {
