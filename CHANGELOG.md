@@ -411,3 +411,14 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 - Servicio VPN con notificación persistente.
 - Compatible con Android 8.0+ (API 26).
 - Build automático con GitHub Actions.
+
+## [1.0.0-beta32] — 2026-10-19
+
+### Arreglado
+- **Loop de enrutamiento**: Se corrigió la exclusión de rutas en la VPN. El
+  tráfico destinado al proxy UPR (10.2.1.80) ahora se enruta correctamente
+  fuera del túnel, evitando que la VPN intente tunelizar su propia conexión.
+- **Reducción de logs**: Eliminado log nivel DEBUG para cada conexión CONNECT
+  al proxy, evitando que el buffer de logs se llene en segundos.
+
+---

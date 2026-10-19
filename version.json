@@ -1,8 +1,8 @@
 {
-  "versionCode": 31,
-  "versionName": "1.0.0-beta31",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta31/UPRProxy-1.0.0-beta31-release.apk",
-  "changelog": "• Arreglado: CRÍTICO — el proxy devolvía 503 Service Unavailable para conexiones IPv6 (AAAA). Se eliminó IPv6 del túnel VPN y se forza IPv4, resolviendo fallos de Facebook, WhatsApp y otras apps.\n• Arreglado: CRÍTICO — el puente SOCKS5 ahora reintentá la conexión ante 503 transitorias (hasta 2 reintentos con backoff), evitando fallos intermitentes de conexión.\n• Arreglado: el DNS del sistema de la UPR (10.2.144.1, 10.2.1.8) se añade al túnel en vez del mapdns ficticio, para que los dominios se resuelvan correctamente.\n• Arreglado: se excluyen del túnel las IPs del proxy y DNS locales (10.2.1.80, 10.2.144.1, 10.2.1.8) para evitar loops de routing.\n• Arreglado: se quitó la sección mapdns rota de la config YAML del motor nativo.",
+  "versionCode": 32,
+  "versionName": "1.0.0-beta32",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta32/UPRProxy-1.0.0-beta32-release.apk",
+  "changelog": "• Arreglo CRÍTICO: exclusión de rutas de la VPN. El tráfico hacia el proxy UPR ahora se enruta fuera del túnel para evitar el loop infinito de conexión.\n• Optimización de logs: reducción de ruido en logcat.",
   "mandatory": false,
   "publishedAt": "2026-10-19"
 }
