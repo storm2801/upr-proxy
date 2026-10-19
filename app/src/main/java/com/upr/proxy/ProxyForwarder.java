@@ -62,16 +62,11 @@ public class ProxyForwarder implements Runnable {
                 w.write("tunnel:\n");
                 w.write("  mtu: 1400\n");
                 w.write("  ipv4: 10.0.0.2\n");
-                w.write("  ipv6: fd00:1::2\n\n");
+                // Solo IPv4: el proxy corporativo (squid) devolvía 503 para
+                // CONNECT a direcciones IPv6, rompiendo apps como Facebook.
                 w.write("socks5:\n");
                 w.write("  port: 1080\n");
                 w.write("  address: 127.0.0.1\n\n");
-                w.write("mapdns:\n");
-                w.write("  address: 198.18.0.2\n");
-                w.write("  port: 53\n");
-                w.write("  network: 100.64.0.0\n");
-                w.write("  netmask: 255.192.0.0\n");
-                w.write("  cache-size: 10000\n\n");
                 w.write("misc:\n");
                 w.write("  task-stack-size: 20480\n");
                 w.write("  connect-timeout: 10000\n");

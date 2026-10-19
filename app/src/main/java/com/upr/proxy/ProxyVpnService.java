@@ -42,6 +42,13 @@ public class ProxyVpnService extends VpnService {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private Runnable notifUpdater;
 
+    /** IPs que NO deben pasar por el túnel VPN (evita loops con el proxy local). */
+    private static final String[] EXCLUDED_ROUTES = {
+            "10.2.1.80",      // proxy de la UPR (fallback directo)
+            "10.2.144.1",     // DNS del sistema de la UPR
+            "10.2.1.8",       // DNS alternativo de la UPR
+    };
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_STOP.equals(intent.getAction())) {
@@ -78,20 +85,38 @@ public class ProxyVpnService extends VpnService {
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
 
-            try {
-                builder.addAddress("fd00:1::2", 128);
-                builder.addRoute("::", 0);
-            } catch (Exception e) {
-                L.w(TAG, "No se pudo agregar IPv6 a la interfaz VPN: " + e.getMessage());
+            // NOTA: se omite intencionalmente IPv6. El proxy corporativo (squid)
+            // devolvía 503 Service Unavailable para CONNECT a direcciones IPv6,
+            // lo que rompía el tráfico de apps como Facebook/WhatsApp que usan
+            // AAAA. Al solo dar IPv4 en el túnel, el kernel fuerza IPv4 y las
+            // apps caen al registro A (happy eyeballs).
+
+            // Excluir del túnel las IPs del proxy y DNS locales: con
+            // addRoute("0.0.0.0", 0) todo el tráfico del móvil pasa por la VPN,
+            // y sin estas exclusiones el puente SOCKS5 (127.0.0.1:1080) ->
+            // proxy (10.2.1.80) entraba en loop infinito dentro del túnel.
+            for (String ip : EXCLUDED_ROUTES) {
+                try {
+                    builder.addRoute(ip, 32);
+                    L.i(TAG, "Ruta excluida del túnel: " + ip);
+                } catch (Exception e) {
+                    L.w(TAG, "No se pudo excluir ruta " + ip + ": " + e.getMessage());
+                }
             }
 
-            // Configurar DNS virtual para mapdns de hev-socks5-tunnel.
-            // Intercepta las consultas DNS y las mapea a dominios para el proxy HTTP.
-            try {
-                builder.addDnsServer(InetAddress.getByName("198.18.0.2"));
-                L.i(TAG, "DNS virtual mapdns configurado: 198.18.0.2");
-            } catch (Exception e) {
-                L.w(TAG, "Error añadiendo DNS virtual mapdns: " + e.getMessage());
+            // Configurar DNS del sistema de la UPR dentro del túnel.
+            // Con addRoute("0.0.0.0", 0) el móvil solo usa los DNS que declara
+            // el Builder; sin ellos las consultas DNS se pierden y los dominios
+            // no se resuelven → timeout al conectar.
+            // Se usan los DNS reales de la UPR (no el mapdns ficticio 198.18.0.2,
+            // que no resolvía nada y causaba fallos de conexión).
+            for (String dns : new String[]{"10.2.144.1", "10.2.1.8"}) {
+                try {
+                    builder.addDnsServer(InetAddress.getByName(dns));
+                    L.i(TAG, "DNS del túnel: " + dns);
+                } catch (Exception e) {
+                    L.w(TAG, "No se pudo añadir DNS " + dns + ": " + e.getMessage());
+                }
             }
 
             try { builder.addDisallowedApplication(getPackageName()); } catch (Exception ignored) {}

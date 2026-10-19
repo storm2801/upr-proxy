@@ -5,6 +5,28 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta31] — 2026-10-19
+
+### Arreglado
+- **CRÍTICO — IPv6 roto**: el proxy de la UPR (squid) devolvía `503 Service
+  Unavailable` para todo `CONNECT` a direcciones IPv6 (AAAA). Esto rompía
+  Facebook, WhatsApp y otras apps que resolvían a IPv6 primero. Se eliminó
+  IPv6 del túnel VPN y se forza IPv4 exclusivamente, así el kernel del móvil
+  usa siempre el registro A.
+- **CRÍTICO — reintentos ante 503**: el puente SOCKS5 ahora reintentá la
+  conexión al proxy hasta 2 veces con backoff exponencial cuando el proxy
+  responde 503 (transitorio por congestión), en vez de fallar inmediatamente.
+- **DNS del túnel corregido**: se usan los DNS reales de la UPR
+  (`10.2.144.1`, `10.2.1.8`) declarados en el Builder en vez del mapdns
+  ficticio `198.18.0.2`, que no resolvía nada y causaba timeouts.
+- **Exclusiones de rutas**: se excluyen del túnel las IPs del proxy
+  (`10.2.1.80`) y los DNS locales, evitando loops de routing cuando el
+  puente SOCKS5 se conecta al proxy a través de la propia VPN.
+- **Config YAML del motor nativo**: se quitó la sección `mapdns` rota y el
+  bloque IPv6, que eran la causa raíz de los fallos de resolución.
+
+---
+
 ## [1.0.0-beta30] — 2026-10-19
 
 ### Arreglado
