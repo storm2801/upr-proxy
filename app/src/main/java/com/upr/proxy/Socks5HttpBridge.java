@@ -28,6 +28,9 @@ public class Socks5HttpBridge {
     private static final int LISTEN_PORT = 1080;
     private static final int BUFFER_SIZE = 8192;
     private static final int CONNECT_TIMEOUT_MS = 15000;
+    /** Reintentos ante 503 Service Unavailable (transitorio por congestión del proxy). */
+    private static final int MAX_RETRIES_503 = 2;
+    private static final long RETRY_BACKOFF_MS = 400;
 
     private final String httpProxyHost;
     private final int httpProxyPort;
@@ -178,87 +181,121 @@ public class Socks5HttpBridge {
 
             L.d(TAG, "CONNECT → " + host + ":" + destPort);
 
-            // ---- Conectar al proxy HTTP ----
-            Socket proxy = new Socket();
-            openSockets.add(proxy);
-            try {
-                proxy.connect(new InetSocketAddress(httpProxyHost, httpProxyPort),
-                        CONNECT_TIMEOUT_MS);
-                proxy.setTcpNoDelay(true);
-
-                OutputStream pOut = proxy.getOutputStream();
-                InputStream pIn = proxy.getInputStream();
-
-                String formattedHost = host;
-                if (formattedHost != null && formattedHost.contains(":") && !formattedHost.startsWith("[")) {
-                    formattedHost = "[" + formattedHost + "]";
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("CONNECT ").append(formattedHost).append(":").append(destPort)
-                        .append(" HTTP/1.1\r\n");
-                sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
-                if (authHeader != null) {
-                    sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
-                }
-                sb.append("Proxy-Connection: Keep-Alive\r\n\r\n");
-                byte[] reqBytes = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                pOut.write(reqBytes);
-                pOut.flush();
-                ProxyStatus.bytesSent.addAndGet(reqBytes.length);
-
-                String statusLine = readLine(pIn);
-                if (statusLine == null || !statusLine.contains(" 200 ")) {
-                    L.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
-                    sendSocksReply(out, 0x05);
-                    return;
-                }
-                String line;
-                while ((line = readLine(pIn)) != null && !line.isEmpty()) { /* ignorar */ }
-
-                L.i(TAG, "✅ Proxy aceptó CONNECT → " + host + ":" + destPort);
-                sendSocksReply(out, 0x00);
-
-                ProxyStatus.activeConnections.incrementAndGet();
-                ProxyStatus.totalConnections.incrementAndGet();
-                counted = true;
-
-                // Tubería bidireccional EN PARALELO.
-                // Los dos pipes DEBEN correr en hilos separados.
-                final java.net.Socket fClient = client;
-                final java.net.Socket fProxy = proxy;
-
-                Thread upPipe = new Thread(() -> {
-                    try {
-                        pipe(in, pOut, false);
-                    } finally {
-                        try { fProxy.shutdownOutput(); } catch (Exception ignored) {}
-                    }
-                }, "socks-up");
-
-                Thread downPipe = new Thread(() -> {
-                    try {
-                        pipe(pIn, out, true);
-                    } finally {
-                        try { fClient.shutdownOutput(); } catch (Exception ignored) {}
-                    }
-                }, "socks-down");
-
-                upPipe.start();
-                downPipe.start();
+            // ---- Conectar al proxy HTTP (con reintentos ante 503) ----
+            // El proxy de la UPR (squid) a veces devuelve 503 Service Unavailable
+            // de forma transitoria bajo carga. Reintentar la conexión resuelve
+            // la mayoría de los fallos sin afectar al usuario.
+            int attempt = 0;
+            boolean conectado = false;
+            while (attempt <= MAX_RETRIES_503 && !conectado) {
+                Socket proxy = new Socket();
+                openSockets.add(proxy);
                 try {
-                    upPipe.join();
-                    downPipe.join();
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
+                    proxy.connect(new InetSocketAddress(httpProxyHost, httpProxyPort),
+                            CONNECT_TIMEOUT_MS);
+                    proxy.setTcpNoDelay(true);
 
-            } catch (IOException e) {
-                L.w(TAG, "Error conectando al proxy: " + e.getMessage());
-                try { sendSocksReply(out, 0x05); } catch (IOException ignored) {}
-            } finally {
-                openSockets.remove(proxy);
-                try { proxy.close(); } catch (IOException ignored) {}
+                    OutputStream pOut = proxy.getOutputStream();
+                    InputStream pIn = proxy.getInputStream();
+
+                    String formattedHost = host;
+                    if (formattedHost != null && formattedHost.contains(":")
+                            && !formattedHost.startsWith("[")) {
+                        formattedHost = "[" + formattedHost + "]";
+                    }
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("CONNECT ").append(formattedHost).append(":").append(destPort)
+                            .append(" HTTP/1.1\r\n");
+                    sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
+                    if (authHeader != null) {
+                        sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
+                    }
+                    sb.append("Proxy-Connection: Keep-Alive\r\n\r\n");
+                    byte[] reqBytes = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    pOut.write(reqBytes);
+                    pOut.flush();
+                    ProxyStatus.bytesSent.addAndGet(reqBytes.length);
+
+                    String statusLine = readLine(pIn);
+                    if (statusLine == null || !statusLine.contains(" 200 ")) {
+                        // Consumir cabeceras para no dejar el socket colgado
+                        String hdr;
+                        while ((hdr = readLine(pIn)) != null && !hdr.isEmpty()) { /* ignorar */ }
+
+                        if (statusLine != null && statusLine.contains(" 503 ")
+                                && attempt < MAX_RETRIES_503) {
+                            L.w(TAG, "Proxy 503 para " + host + ":" + destPort
+                                    + " (intento " + (attempt + 1) + "/" + MAX_RETRIES_503
+                                    + ") → reintentando");
+                            openSockets.remove(proxy);
+                            try { proxy.close(); } catch (IOException ignored) {}
+                            attempt++;
+                            try {
+                                Thread.sleep(RETRY_BACKOFF_MS * attempt);
+                            } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
+                            }
+                            continue;
+                        }
+                        L.w(TAG, "Proxy rechazó CONNECT: " + statusLine);
+                        sendSocksReply(out, 0x05);
+                        return;
+                    }
+                    String line;
+                    while ((line = readLine(pIn)) != null && !line.isEmpty()) { /* ignorar */ }
+
+                    L.i(TAG, "✅ Proxy aceptó CONNECT → " + host + ":" + destPort);
+                    sendSocksReply(out, 0x00);
+
+                    ProxyStatus.activeConnections.incrementAndGet();
+                    ProxyStatus.totalConnections.incrementAndGet();
+                    counted = true;
+
+                    // Tubería bidireccional EN PARALELO.
+                    // Los dos pipes DEBEN correr en hilos separados.
+                    final java.net.Socket fClient = client;
+                    final java.net.Socket fProxy = proxy;
+
+                    Thread upPipe = new Thread(() -> {
+                        try {
+                            pipe(in, pOut, false);
+                        } finally {
+                            try { fProxy.shutdownOutput(); } catch (Exception ignored) {}
+                        }
+                    }, "socks-up");
+
+                    Thread downPipe = new Thread(() -> {
+                        try {
+                            pipe(pIn, out, true);
+                        } finally {
+                            try { fClient.shutdownOutput(); } catch (Exception ignored) {}
+                        }
+                    }, "socks-down");
+
+                    upPipe.start();
+                    downPipe.start();
+                    try {
+                        upPipe.join();
+                        downPipe.join();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    conectado = true;
+
+                } catch (IOException e) {
+                    L.w(TAG, "Error conectando al proxy: " + e.getMessage());
+                    try { sendSocksReply(out, 0x05); } catch (IOException ignored) {}
+                    openSockets.remove(proxy);
+                    try { proxy.close(); } catch (IOException ignored) {}
+                    return;
+                } finally {
+                    if (!conectado) {
+                        openSockets.remove(proxy);
+                        try { proxy.close(); } catch (IOException ignored) {}
+                    }
+                }
             }
 
         } catch (IOException e) {

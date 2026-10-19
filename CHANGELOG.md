@@ -5,6 +5,50 @@ Todos los cambios importantes del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0-beta31] — 2026-10-19
+
+### Arreglado
+- **CRÍTICO — IPv6 roto**: el proxy de la UPR (squid) devolvía `503 Service
+  Unavailable` para todo `CONNECT` a direcciones IPv6 (AAAA). Esto rompía
+  Facebook, WhatsApp y otras apps que resolvían a IPv6 primero. Se eliminó
+  IPv6 del túnel VPN y se forza IPv4 exclusivamente, así el kernel del móvil
+  usa siempre el registro A.
+- **CRÍTICO — reintentos ante 503**: el puente SOCKS5 ahora reintentá la
+  conexión al proxy hasta 2 veces con backoff exponencial cuando el proxy
+  responde 503 (transitorio por congestión), en vez de fallar inmediatamente.
+- **DNS del túnel corregido**: se usan los DNS reales de la UPR
+  (`10.2.144.1`, `10.2.1.8`) declarados en el Builder en vez del mapdns
+  ficticio `198.18.0.2`, que no resolvía nada y causaba timeouts.
+- **Exclusiones de rutas**: se excluyen del túnel las IPs del proxy
+  (`10.2.1.80`) y los DNS locales, evitando loops de routing cuando el
+  puente SOCKS5 se conecta al proxy a través de la propia VPN.
+- **Config YAML del motor nativo**: se quitó la sección `mapdns` rota y el
+  bloque IPv6, que eran la causa raíz de los fallos de resolución.
+
+---
+
+## [1.0.0-beta30] — 2026-10-19
+
+### Arreglado
+- **Configuración de red del túnel**: se aseguran `addRoute("0.0.0.0", 0)` y
+  `addRoute("::", 0)` junto con `addAddress` IPv4/IPv6, para que todo el tráfico
+  del móvil sea redirigido por la VPN y pase por el proxy.
+- **DNS del sistema en el túnel**: se añade `addDnsServer` con la dirección del
+  DNS virtual mapdns (198.18.0.2) para que las consultas de dominios se resuelvan
+  dentro del túnel y no fallen por timeout.
+- **Handshake CONNECT robusto**: se mantiene el fallback a IP directa
+  (`10.2.1.80`) cuando el dominio `proxy.upr.edu.cu` no resuelve, y se
+  formatea correctamente el host en el comando CONNECT tanto para dominio como
+  para IP literal.
+- **Timeouts**: CONNECT al proxy aumentado a 15 s y timeout de lectura a 60 s,
+  evitando fallos de conexión en redes con latencia alta.
+
+### Mejorado
+- **Diagnóstico en tiempo real**: la pantalla principal muestra SSID, IP local,
+  gateway, DNS y proxy del WiFi actual, junto con el estado del proxy y la VPN.
+
+---
+
 ## [1.0.0-beta26] — 2026-10-15
 
 ### Añadido
@@ -367,3 +411,43 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 - Servicio VPN con notificación persistente.
 - Compatible con Android 8.0+ (API 26).
 - Build automático con GitHub Actions.
+
+## [1.0.0-beta32] — 2026-10-19
+
+### Arreglado
+- **Loop de enrutamiento**: Se corrigió la exclusión de rutas en la VPN. El
+  tráfico destinado al proxy UPR (10.2.1.80) ahora se enruta correctamente
+  fuera del túnel, evitando que la VPN intente tunelizar su propia conexión.
+- **Reducción de logs**: Eliminado log nivel DEBUG para cada conexión CONNECT
+  al proxy, evitando que el buffer de logs se llene en segundos.
+
+---
+
+## [1.0.0-beta33] — 2026-10-19
+
+### Arreglado
+- **Persistencia en Samsung/Android 12+**: El servicio VPN ahora utiliza
+   y  para evitar ser cerrado
+  por el optimizador de batería de Samsung al pasar a segundo plano.
+- **Estabilidad**: El servicio ya no se detiene automáticamente tras la
+  iniciación debido a restricciones de políticas de servicios en segundo plano.
+
+---
+
+## [1.0.0-beta34] — 2026-10-19
+
+### Arreglado
+- **Loop de enrutamiento**: Se refinó la exclusión de rutas en la VPN. Ahora
+  se utilizan rutas específicas de host (/32) para las IPs del proxy y DNS,
+  asegurando que el tráfico no sea interceptado por la VPN bajo ninguna circunstancia.
+
+---
+
+## [1.0.0-beta35] — 2026-10-19
+
+### Arreglado
+- **Loop de routing**: Refuerzo en la exclusión de rutas del proxy UPR para
+  garantizar que el tráfico de control no sea capturado por el túnel,
+  estabilizando la conexión en dispositivos Samsung.
+
+---
