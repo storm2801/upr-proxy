@@ -1,8 +1,8 @@
 {
-  "versionCode": 35,
-  "versionName": "1.0.0-beta35",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta35/UPRProxy-1.0.0-beta35-release.apk",
-  "changelog": "• Arreglo definitivo de enrutamiento (evitar loop de VPN).\n• Corrección de autoría de commits.",
+  "versionCode": 36,
+  "versionName": "1.0.0-beta36",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta36/UPRProxy-1.0.0-beta36-release.apk",
+  "changelog": "• Arreglo: Corrección del bucle de actualización.\n• Arreglo: Estabilidad de la VPN.",
   "mandatory": false,
   "publishedAt": "2026-10-19"
 }

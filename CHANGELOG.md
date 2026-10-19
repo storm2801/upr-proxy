@@ -451,3 +451,11 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
   estabilizando la conexión en dispositivos Samsung.
 
 ---
+
+## [1.0.0-beta36] — 2026-10-19
+
+### Arreglado
+- **Bucle de actualización**: Se corrigió el conflicto de versiones entre 
+  y  que hacía que el móvil volviera a instalar la misma versión.
+
+---
