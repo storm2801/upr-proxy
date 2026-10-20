@@ -481,3 +481,10 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
   sesiones del portal cautivo.
 
 ---
+
+## [1.0.0-beta39] — 2026-10-20
+
+### Arreglado
+- **Handshake 403 Forbidden**: Ajustada la cabecera  y el  para que el tráfico del túnel sea indistinguible de un navegador web estándar ante el proxy de la UPR.
+
+---
