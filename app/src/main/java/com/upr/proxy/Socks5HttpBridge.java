@@ -208,6 +208,8 @@ public class Socks5HttpBridge {
                     sb.append("CONNECT ").append(formattedHost).append(":").append(destPort)
                             .append(" HTTP/1.1\r\n");
                     sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
+                    // User-Agent de navegador para evitar el 403 Forbidden
+                    sb.append("User-Agent: Mozilla/5.0 (Linux; Android 12; SM-G970U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36\r\n");
                     if (authHeader != null) {
                         sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
                     }

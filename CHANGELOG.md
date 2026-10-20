@@ -469,3 +469,15 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
   y  que hacía que el móvil volviera a instalar la misma versión.
 
 ---
+
+## [1.0.0-beta38] — 2026-10-20
+
+### Arreglado
+- **Proxy 403 Forbidden**: Se ha añadido un encabezado de navegador legítimo
+  en el túnel para evitar que el servidor proxy de la UPR detecte la app como
+  no autorizada.
+- **Login Intranet**: Se cambió el acceso a la intranet para que abra el
+  navegador externo, permitiendo una gestión correcta de las cookies y
+  sesiones del portal cautivo.
+
+---

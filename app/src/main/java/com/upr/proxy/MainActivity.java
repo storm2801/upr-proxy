@@ -148,8 +148,13 @@ public class MainActivity extends AppCompatActivity {
         btnToggle.setOnClickListener(v -> toggleConnection());
         btnTest.setOnClickListener(v -> probarConexion());
 
-        // Abrir intranet UPR con autofill embebido
-        findViewById(R.id.btnOpenIntranet).setOnClickListener(v -> abrirLoginUPR());
+        // Abrir portal de autenticación UPR en el navegador externo
+        findViewById(R.id.btnOpenIntranet).setOnClickListener(v -> {
+            String url = "https://upr-wifi.upr.edu.cu:8003/index.php?zone=upr_wifi&redirurl=http%3A%2F%2Fintranet.upr.edu.cu%2F";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        });
 
         // Abrir ajustes de WiFi para configurar proxy
         findViewById(R.id.btnWifiSettings).setOnClickListener(v -> {
