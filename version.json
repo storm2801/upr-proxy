@@ -1,8 +1,8 @@
 {
-  "versionCode": 39,
-  "versionName": "1.0.0-beta39",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta39/UPRProxy-1.0.0-beta39-release.apk",
-  "changelog": "• Arreglo crítico 403 Forbidden: Ajuste de cabeceras en el handshake del proxy para pasar los filtros de seguridad de la UPR.\n• Optimización de la persistencia del servicio.",
+  "versionCode": 40,
+  "versionName": "1.0.0-beta40",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0-beta40/UPRProxy-1.0.0-beta40-release.apk",
+  "changelog": "• Arreglo: Ajuste fino de cabeceras HTTP (Keep-Alive) para compatibilidad con el proxy corporativo.\n• Mejora: Limpieza del historial de commits.",
   "mandatory": false,
   "publishedAt": "2026-10-20"
 }
