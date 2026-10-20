@@ -488,3 +488,12 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/).
 - **Handshake 403 Forbidden**: Ajustada la cabecera  y el  para que el tráfico del túnel sea indistinguible de un navegador web estándar ante el proxy de la UPR.
 
 ---
+
+## [1.0.0-beta41] — 2026-10-20
+
+### Arreglado
+- **Proxy 403 Forbidden**: Añadidas cabeceras  y  al
+  handshake de conexión, simulando una sesión de navegación web completa y
+  evitando que el proxy rechace la petición como "no autorizada".
+
+---

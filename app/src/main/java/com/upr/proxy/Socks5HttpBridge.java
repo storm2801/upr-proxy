@@ -209,7 +209,9 @@ public class Socks5HttpBridge {
                     sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
                     sb.append("Proxy-Connection: keep-alive\r\n");
                     sb.append("Connection: keep-alive\r\n");
-                    sb.append("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\n");
+                    sb.append("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36\r\n");
+                    sb.append("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\n");
+                    sb.append("Accept-Language: es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7\r\n");
                     if (authHeader != null) {
                         sb.append("Proxy-Authorization: ").append(authHeader).append("\r\n");
                     }
