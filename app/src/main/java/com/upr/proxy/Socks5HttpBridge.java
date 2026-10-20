@@ -204,9 +204,8 @@ public class Socks5HttpBridge {
                         formattedHost = "[" + formattedHost + "]";
                     }
 
-                    // Usamos encabezados estándar de un navegador Chrome para intentar superar el 403
-                    sb.append("CONNECT ").append(formattedHost).append(":").append(destPort)
-                            .append(" HTTP/1.1\r\n");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("CONNECT ").append(formattedHost).append(":").append(destPort).append(" HTTP/1.1\r\n");
                     sb.append("Host: ").append(formattedHost).append(":").append(destPort).append("\r\n");
                     sb.append("Proxy-Connection: keep-alive\r\n");
                     sb.append("Connection: keep-alive\r\n");
