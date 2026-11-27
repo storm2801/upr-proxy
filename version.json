@@ -1,8 +1,8 @@
 {
-  "versionCode": 42,
-  "versionName": "1.0.0",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.0/UPRProxy-1.0.0.apk",
-  "changelog": "Nueva versión 1.0.0 disponible. Consulta el CHANGELOG para más detalles.",
+  "versionCode": 43,
+  "versionName": "1.0.1",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.1/UPRProxy-1.0.1.apk",
+  "changelog": "v1.0.1: workflow unificado, version.json manual.",
   "mandatory": false,
   "publishedAt": "2026-11-27"
 }
