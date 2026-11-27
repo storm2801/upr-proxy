@@ -59,3 +59,7 @@ keystore.properties
 *.bak
 *.home.bak
 README.md.save
+
+# Documentación personal y archivo
+IT-Hub/
+archive/
