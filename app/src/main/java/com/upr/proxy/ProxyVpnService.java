@@ -91,6 +91,7 @@ public class ProxyVpnService extends VpnService {
             builder.setSession("UPR Proxy");
             builder.addAddress("10.0.0.2", 32);
             builder.addRoute("0.0.0.0", 0);
+            builder.setMtu(1280);  // fix: MTU explícito (antes Android usaba default)
 
             // NOTA: se omite intencionalmente IPv6. El proxy corporativo (squid)
             // devolvía 503 Service Unavailable para CONNECT a direcciones IPv6,
@@ -118,7 +119,7 @@ public class ProxyVpnService extends VpnService {
             // no se resuelven → timeout al conectar.
             // Se usan los DNS reales de la UPR (no el mapdns ficticio 198.18.0.2,
             // que no resolvía nada y causaba fallos de conexión).
-            for (String dns : new String[]{"10.2.144.1", "10.2.1.8"}) {
+            for (String dns : new String[]{"10.2.144.1", "10.2.1.8"}) {  // DNS de la UPR (modo uni)
                 try {
                     builder.addDnsServer(InetAddress.getByName(dns));
                     L.i(TAG, "DNS del túnel: " + dns);
