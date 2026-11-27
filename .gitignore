@@ -56,3 +56,5 @@ keystore.properties
 upr-proxy.jks
 *.jks
 keystore.properties
+*.bak
+*.home.bak
