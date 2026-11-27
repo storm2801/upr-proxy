@@ -77,13 +77,13 @@ jobs:
           VERSION=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle | head -1)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
-          cp "$APK" "UPRProxy-${VERSION}-release.apk"
-          ls -lh "UPRProxy-${VERSION}-release.apk"
+          cp "$APK" "UPRProxy-${VERSION}.apk"
+          ls -lh "UPRProxy-${VERSION}.apk"
 
       - name: Subir APK como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UPRProxy-${{ steps.apk.outputs.VERSION }}-release
+          name: UPRProxy-${{ steps.apk.outputs.VERSION }}
           path: UPRProxy-*.apk
           retention-days: 90
 
