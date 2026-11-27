@@ -375,39 +375,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 actualizarBotonYEstado();
-                String titulo;
-                String mensaje;
-                if (msg.contains("Timeout")) {
-                    titulo = "El proxy no responde";
-                    mensaje = "El proxy de la UPR no contesta.\n\n"
-                            + "Asegúrate de estar conectado al WiFi de la universidad y que "
-                            + "el cable de red del aula esté bien enchufado.\n\n"
-                            + "Si sigues con problemas, avisa al área de informatización.";
-                } else if (msg.contains("resolver")) {
-                    titulo = "No se encuentra el servidor";
-                    mensaje = "No se pudo resolver '" + host + "'.\n\n"
-                            + "Esto pasa normalmente cuando NO estás en la red de la UPR. "
-                            + "Conéctate al WiFi de la universidad e inténtalo de nuevo.";
-                } else if (msg.contains("Usuario o contraseña")) {
-                    titulo = "Credenciales incorrectas";
-                    mensaje = "El proxy rechazó tu usuario y contraseña.\n\n"
-                            + "Revisa que:\n"
-                            + "• El usuario esté bien escrito (sin espacios)\n"
-                            + "• La contraseña sea la del proxy (no la del correo)\n"
-                            + "• Las mayúsculas/minúsculas coincidan";
-                } else if (msg.contains("conectar a")) {
-                    titulo = "No se puede llegar al proxy";
-                    mensaje = "No hubo forma de conectar con " + host + ":" + port + ".\n\n"
-                            + "Verifica tu conexión al WiFi de la UPR.";
-                } else {
-                    titulo = "No se puede conectar";
-                    mensaje = msg + "\n\nAsegúrate de estar conectado a la red de la UPR.";
-                }
-
-                ErrorDialog.show(MainActivity.this, titulo, mensaje,
-                        getString(R.string.error_close), null,
-                        null, null);
-                L.w("MainActivity", "Cancelado: " + msg);
+                L.w("MainActivity", "Chequeo falló: " + msg + " — ofreciendo conectar de todos modos");
+                new android.app.AlertDialog.Builder(MainActivity.this)
+                        .setTitle("No se pudo verificar el proxy")
+                        .setMessage(msg + "\n\n¿Quieres intentar conectar de todos modos?")
+                        .setPositiveButton("Conectar de todos modos", (d, w) -> {
+                            L.i("MainActivity", "Forzando conexión sin verificación previa");
+                            Intent intent = VpnService.prepare(MainActivity.this);
+                            if (intent != null) {
+                                vpnLauncher.launch(intent);
+                            } else {
+                                startVpnService();
+                            }
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
             }
         });
     }
