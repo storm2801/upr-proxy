@@ -60,13 +60,14 @@ public class ProxyForwarder implements Runnable {
             File cfg = new File(context.getCacheDir(), "hev.yaml");
             try (FileWriter w = new FileWriter(cfg)) {
                 w.write("tunnel:\n");
-                w.write("  mtu: 1400\n");
+                w.write("  mtu: 1280\n");  // Fix: igualado al TUN
                 w.write("  ipv4: 10.0.0.2\n");
                 // Solo IPv4: el proxy corporativo (squid) devolvía 503 para
                 // CONNECT a direcciones IPv6, rompiendo apps como Facebook.
                 w.write("socks5:\n");
                 w.write("  port: 1080\n");
-                w.write("  address: 127.0.0.1\n\n");
+                w.write("  address: 127.0.0.1\n");
+                w.write("  udp: false\n\n");  // Fix: forzar TCP
                 w.write("misc:\n");
                 w.write("  task-stack-size: 20480\n");
                 w.write("  connect-timeout: 10000\n");

@@ -1,8 +1,8 @@
 {
-  "versionCode": 43,
-  "versionName": "1.0.1",
-  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.1/UPRProxy-1.0.1.apk",
-  "changelog": "v1.0.1: workflow unificado, version.json manual.",
+  "versionCode": 44,
+  "versionName": "1.0.2",
+  "apkUrl": "https://github.com/storm2801/upr-proxy/releases/download/v1.0.2/UPRProxy-1.0.2.apk",
+  "changelog": "v1.0.2: Fix MTU y UDP para forzar TCP (Instagram, WhatsApp media, Chrome).",
   "mandatory": false,
   "publishedAt": "2026-11-27"
 }

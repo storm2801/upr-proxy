@@ -103,15 +103,7 @@ public class ProxyVpnService extends VpnService {
             // Usamos rutas con prefijos específicos para garantizar que el
             // tráfico al proxy de la UPR NO pase por la interfaz VPN,
             // evitando el bucle de enrutamiento.
-            for (String ip : EXCLUDED_ROUTES) {
-                try {
-                    // Usamos /32 para rutas específicas de host
-                    builder.addRoute(ip, 32);
-                    L.i(TAG, "Ruta específica excluida: " + ip + "/32");
-                } catch (Exception e) {
-                    L.w(TAG, "No se pudo excluir ruta " + ip + ": " + e.getMessage());
-                }
-            }
+            // Exclusiones manejadas por addDisallowedApplication
 
             // Configurar DNS del sistema de la UPR dentro del túnel.
             // Con addRoute("0.0.0.0", 0) el móvil solo usa los DNS que declara
